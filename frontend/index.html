@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高血脂风险分层预警与干预推荐系统 Web版 V1.0</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.bootcdn.net/ajax/libs/lucide/0.468.0/umd/lucide.min.js"></script>
     <style>
         :root {
-            --ink: #1c2430;
+            --brand: #176b87;
+            --brand-soft: #e8f5f7;
+            --ink: #1f2937;
             --muted: #667085;
             --line: #d9e2ec;
-            --panel: #ffffff;
-            --soft: #f6f8fb;
-            --brand: #176b87;
-            --brand-2: #34a0a4;
+            --page: #f6f8fb;
             --ok: #2e7d32;
             --warn: #b7791f;
             --bad: #b42318;
@@ -25,138 +23,75 @@
         }
 
         body {
-            min-height: 100vh;
             color: var(--ink);
-            background:
-                linear-gradient(180deg, rgba(23, 107, 135, 0.08), rgba(246, 248, 251, 0) 340px),
-                var(--soft);
+            background: var(--page);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
         }
 
-        .topbar {
-            border-bottom: 1px solid rgba(28, 36, 48, 0.08);
-            background: rgba(255, 255, 255, 0.86);
-            backdrop-filter: blur(16px);
+        .app-header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--line);
         }
 
-        .brand-mark {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: grid;
-            place-items: center;
-            color: #ffffff;
-            background: linear-gradient(135deg, var(--brand), var(--brand-2));
+        .app-title {
+            font-weight: 760;
+            color: var(--brand);
         }
 
         .hero {
-            padding: 30px 0 22px;
+            padding: 26px 0 18px;
         }
 
         .hero h1 {
-            font-size: clamp(1.75rem, 3vw, 2.5rem);
+            font-size: clamp(1.6rem, 3vw, 2.35rem);
             font-weight: 760;
             margin: 0;
         }
 
         .hero p {
+            max-width: 820px;
             color: var(--muted);
             margin: 10px 0 0;
-            max-width: 820px;
         }
 
-        .workspace {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 320px;
-            gap: 20px;
-            align-items: start;
-            padding-bottom: 42px;
-        }
-
-        .surface {
-            background: var(--panel);
+        .panel {
+            background: #ffffff;
             border: 1px solid var(--line);
             border-radius: 8px;
-        }
-
-        .main-surface {
             padding: 22px;
         }
 
-        .side-panel {
-            padding: 18px;
-            position: sticky;
-            top: 78px;
-        }
-
-        .step-indicator {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 8px;
-            margin-bottom: 24px;
-        }
-
-        .step {
-            min-height: 58px;
-            padding: 10px 12px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: #ffffff;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 650;
-        }
-
-        .step .step-num {
-            width: 28px;
-            height: 28px;
-            border-radius: 999px;
-            display: grid;
-            place-items: center;
-            background: #edf2f7;
-            color: var(--muted);
-            flex: 0 0 auto;
-        }
-
-        .step.active {
-            border-color: rgba(23, 107, 135, 0.35);
-            color: var(--brand);
-            background: #eef8fa;
-        }
-
-        .step.active .step-num {
-            color: #ffffff;
-            background: var(--brand);
-        }
-
         .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 24px 0 14px;
+            font-size: 1.08rem;
+            font-weight: 760;
+            margin: 26px 0 14px;
         }
 
         .section-title:first-child {
             margin-top: 0;
         }
 
-        .section-title h2,
-        .section-title h3 {
-            font-size: 1.05rem;
-            font-weight: 760;
-            margin: 0;
+        .stepbar {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 20px;
         }
 
-        .section-icon {
-            width: 32px;
-            height: 32px;
+        .step {
+            padding: 10px 12px;
+            border: 1px solid var(--line);
             border-radius: 8px;
-            background: #e8f5f7;
+            color: var(--muted);
+            text-align: center;
+            font-weight: 650;
+            background: #ffffff;
+        }
+
+        .step.active {
             color: var(--brand);
-            display: grid;
-            place-items: center;
+            border-color: rgba(23, 107, 135, 0.35);
+            background: var(--brand-soft);
         }
 
         .field-grid {
@@ -176,26 +111,20 @@
 
         .form-control:focus,
         .form-check-input:focus {
-            border-color: var(--brand-2);
-            box-shadow: 0 0 0 0.2rem rgba(52, 160, 164, 0.16);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 0.18rem rgba(23, 107, 135, 0.14);
         }
 
-        .toolbar {
+        .quick-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 22px;
+            margin-bottom: 20px;
         }
 
         .btn {
             border-radius: 8px;
             font-weight: 650;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
         .btn-primary {
@@ -208,112 +137,46 @@
             border-color: #11586f;
         }
 
-        .btn-outline-primary {
-            color: var(--brand);
-            border-color: var(--brand);
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--brand);
-            border-color: var(--brand);
-        }
-
-        .quick-grid,
-        .history-list {
-            display: grid;
-            gap: 10px;
-        }
-
-        .quick-case,
-        .history-item,
-        .metric-card,
-        .plan-card {
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: #ffffff;
-        }
-
-        .quick-case,
-        .history-item {
-            padding: 12px;
-            cursor: pointer;
-            transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
-        }
-
-        .quick-case:hover,
-        .history-item:hover {
-            border-color: rgba(23, 107, 135, 0.45);
-            transform: translateY(-1px);
-            box-shadow: 0 10px 24px rgba(28, 36, 48, 0.08);
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-        .status-low { background: var(--ok); }
-        .status-medium { background: #d69e2e; }
-        .status-high { background: var(--bad); }
-
-        .result-hero {
+        .result-card {
             border: 1px solid var(--line);
             border-left: 6px solid var(--brand);
             border-radius: 8px;
             padding: 18px;
             background: #ffffff;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 16px;
-            align-items: center;
         }
 
         .risk-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 96px;
-            padding: 9px 16px;
+            display: inline-block;
+            min-width: 92px;
+            padding: 8px 16px;
             border-radius: 999px;
             color: #ffffff;
             font-weight: 760;
+            text-align: center;
         }
 
-        .metric-grid {
+        .mini-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
         }
 
-        .metric-card {
-            padding: 14px;
-        }
-
-        .metric-card .label {
-            color: var(--muted);
-            font-size: 0.88rem;
-        }
-
-        .metric-card .value {
-            font-size: 1.35rem;
-            font-weight: 760;
-        }
-
-        .chart-wrap {
-            min-height: 260px;
-            display: grid;
-            place-items: center;
+        .mini-card,
+        .plan-card {
             border: 1px solid var(--line);
             border-radius: 8px;
+            padding: 14px;
             background: #ffffff;
-            padding: 16px;
         }
 
-        canvas {
-            max-width: 100%;
+        .mini-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .mini-value {
+            font-size: 1.25rem;
+            font-weight: 760;
         }
 
         .factor-list {
@@ -322,20 +185,24 @@
         }
 
         .factor-item {
-            border: 1px solid #f6d58f;
-            background: #fff8e5;
+            border: 1px solid #f2d38f;
             border-radius: 8px;
             padding: 10px 12px;
+            background: #fff8e5;
         }
 
-        .plan-grid {
+        .chart-box {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 14px;
+            background: #ffffff;
+            overflow-x: auto;
+        }
+
+        .plans {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
-        }
-
-        .plan-card {
-            padding: 14px;
         }
 
         .plan-card.best {
@@ -343,69 +210,54 @@
             background: #f3fbf4;
         }
 
-        .report-box {
+        .report {
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: #ffffff;
             padding: 18px;
+            background: #ffffff;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .page-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 22px;
         }
 
         .print-only {
             display: none;
         }
 
-        .empty-state {
-            color: var(--muted);
-            border: 1px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 14px;
-            text-align: center;
-        }
-
-        .small-muted {
-            color: var(--muted);
-            font-size: 0.88rem;
-        }
-
-        @media (max-width: 992px) {
-            .workspace {
+        @media (max-width: 900px) {
+            .field-grid,
+            .field-grid.three,
+            .mini-grid,
+            .plans {
                 grid-template-columns: 1fr;
             }
 
-            .side-panel {
-                position: static;
-            }
-
-            .metric-grid,
-            .plan-grid,
-            .field-grid.three {
-                grid-template-columns: 1fr;
+            .stepbar {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
-        @media (max-width: 720px) {
-            .main-surface {
+        @media (max-width: 560px) {
+            .panel {
                 padding: 16px;
             }
 
-            .step-indicator,
-            .field-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .result-hero {
+            .stepbar {
                 grid-template-columns: 1fr;
             }
         }
 
         @media print {
-            body {
-                background: #ffffff;
-            }
-
-            .topbar,
-            .hero,
-            .workspace,
             .no-print {
                 display: none !important;
             }
@@ -414,7 +266,11 @@
                 display: block !important;
             }
 
-            .report-box {
+            body {
+                background: #ffffff;
+            }
+
+            .report {
                 border: none;
                 padding: 0;
             }
@@ -422,267 +278,205 @@
     </style>
 </head>
 <body>
-    <nav class="topbar no-print">
-        <div class="container py-3 d-flex align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="brand-mark"><i data-lucide="activity"></i></div>
-                <div>
-                    <div class="fw-bold">高血脂风险预警系统</div>
-                    <div class="small-muted">Web版 V1.0</div>
-                </div>
+    <header class="app-header no-print">
+        <div class="container py-3 d-flex justify-content-between align-items-center gap-3">
+            <div>
+                <div class="app-title">高血脂风险预警系统</div>
+                <div class="small muted">Web版 V1.0</div>
             </div>
-            <div class="d-flex gap-2">
-                <a href="/about" class="btn btn-outline-secondary btn-sm"><i data-lucide="info"></i>关于</a>
-                <button class="btn btn-outline-primary btn-sm" onclick="printReport()" id="topPrintBtn" disabled><i data-lucide="printer"></i>打印报告</button>
-            </div>
-        </div>
-    </nav>
-
-    <header class="hero no-print">
-        <div class="container">
-            <h1>高血脂风险分层预警与干预推荐系统</h1>
-            <p>融合血脂指标、痰湿体质积分与活动能力评分，完成风险识别、患者画像分型和预算约束下的干预方案推荐。</p>
+            <a href="/about" class="btn btn-outline-secondary btn-sm">关于系统</a>
         </div>
     </header>
 
-    <main class="container no-print">
-        <div class="workspace">
-            <section class="surface main-surface">
-                <div class="step-indicator">
-                    <div class="step active" id="step1-indicator"><span class="step-num">1</span><span>信息录入</span></div>
-                    <div class="step" id="step2-indicator"><span class="step-num">2</span><span>风险计算</span></div>
-                    <div class="step" id="step3-indicator"><span class="step-num">3</span><span>风险结果</span></div>
-                    <div class="step" id="step4-indicator"><span class="step-num">4</span><span>干预报告</span></div>
+    <section class="hero no-print">
+        <div class="container">
+            <h1>高血脂风险分层预警与干预推荐系统</h1>
+            <p>输入基础健康信息后，系统将给出风险分级、异常因素、患者画像和个体化干预方案。本系统仅供研究和健康管理辅助参考。</p>
+        </div>
+    </section>
+
+    <main class="container pb-5 no-print">
+        <div class="panel">
+            <div class="stepbar">
+                <div class="step active" id="step1-indicator">1. 信息录入</div>
+                <div class="step" id="step2-indicator">2. 风险计算</div>
+                <div class="step" id="step3-indicator">3. 风险结果</div>
+                <div class="step" id="step4-indicator">4. 评估报告</div>
+            </div>
+
+            <section id="step1">
+                <div class="quick-actions">
+                    <button type="button" class="btn btn-outline-success" id="exampleLow">低风险示例</button>
+                    <button type="button" class="btn btn-outline-warning" id="exampleMedium">中风险示例</button>
+                    <button type="button" class="btn btn-outline-danger" id="exampleHigh">高风险示例</button>
+                    <button type="button" class="btn btn-primary" id="startAssessment">开始评估</button>
                 </div>
 
-                <div id="step1">
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="user-round"></i></span>
-                        <h2>基本信息</h2>
+                <h2 class="section-title">基本信息</h2>
+                <div class="field-grid">
+                    <div>
+                        <label for="age" class="form-label">年龄</label>
+                        <input type="number" class="form-control" id="age" value="55" min="18" max="120">
                     </div>
-                    <div class="field-grid">
-                        <div>
-                            <label for="age" class="form-label">年龄</label>
-                            <input type="number" class="form-control" id="age" value="55" min="18" max="120">
-                        </div>
-                        <div>
-                            <label class="form-label">性别</label>
-                            <div class="d-flex gap-3 pt-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked>
-                                    <label class="form-check-label" for="genderMale">男</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="0">
-                                    <label class="form-check-label" for="genderFemale">女</label>
-                                </div>
+                    <div>
+                        <label class="form-label">性别</label>
+                        <div class="d-flex gap-3 pt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked>
+                                <label class="form-check-label" for="genderMale">男</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="0">
+                                <label class="form-check-label" for="genderFemale">女</label>
                             </div>
                         </div>
-                        <div>
-                            <label for="height" class="form-label">身高 cm</label>
-                            <input type="number" class="form-control" id="height" value="170" min="100" max="220">
-                        </div>
-                        <div>
-                            <label for="weight" class="form-label">体重 kg</label>
-                            <input type="number" class="form-control" id="weight" value="75" min="30" max="200" step="0.1">
-                        </div>
                     </div>
-
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="test-tube-2"></i></span>
-                        <h2>生化指标</h2>
+                    <div>
+                        <label for="height" class="form-label">身高 cm</label>
+                        <input type="number" class="form-control" id="height" value="170" min="100" max="220">
                     </div>
-                    <div class="field-grid three">
-                        <div>
-                            <label for="tg" class="form-label">甘油三酯 TG</label>
-                            <input type="number" class="form-control" id="tg" value="1.5" min="0" step="0.01">
-                            <div class="form-text">mmol/L，高风险阈值 1.70</div>
-                        </div>
-                        <div>
-                            <label for="tc" class="form-label">总胆固醇 TC</label>
-                            <input type="number" class="form-control" id="tc" value="5.2" min="0" step="0.01">
-                            <div class="form-text">mmol/L，高风险阈值 6.20</div>
-                        </div>
-                        <div>
-                            <label for="hdl_c" class="form-label">HDL-C</label>
-                            <input type="number" class="form-control" id="hdl_c" value="1.2" min="0" step="0.01">
-                            <div class="form-text">mmol/L，低于 1.00 需关注</div>
-                        </div>
-                        <div>
-                            <label for="ldl_c" class="form-label">LDL-C</label>
-                            <input type="number" class="form-control" id="ldl_c" value="3.4" min="0" step="0.01">
-                            <div class="form-text">mmol/L，高风险阈值 4.10</div>
-                        </div>
-                        <div>
-                            <label for="urea_acid" class="form-label">血尿酸</label>
-                            <input type="number" class="form-control" id="urea_acid" value="360" min="0" step="1">
-                            <div class="form-text">umol/L，高风险阈值 420</div>
-                        </div>
-                        <div>
-                            <label for="budget" class="form-label">6个月预算</label>
-                            <input type="number" class="form-control" id="budget" value="2000" min="0" max="5000" step="100">
-                            <div class="form-text">元，论文默认上限 2000</div>
-                        </div>
-                    </div>
-
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="leaf"></i></span>
-                        <h2>中医体质与活动能力</h2>
-                    </div>
-                    <div class="field-grid">
-                        <div>
-                            <label for="tan_score" class="form-label">痰湿体质积分</label>
-                            <input type="number" class="form-control" id="tan_score" value="45" min="0" max="100">
-                            <div class="form-text">0-100 分，60 分以上提示明显痰湿偏颇</div>
-                        </div>
-                        <div>
-                            <label for="adl_score" class="form-label">ADL 活动能力评分</label>
-                            <input type="number" class="form-control" id="adl_score" value="55" min="0" max="100">
-                            <div class="form-text">0-100 分，40 分及以下提示活动受限</div>
-                        </div>
-                    </div>
-
-                    <div id="inputAlert" class="alert alert-warning mt-4 d-none"></div>
-
-                    <div class="toolbar">
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-outline-secondary" onclick="fillExample('low')"><i data-lucide="badge-check"></i>低风险示例</button>
-                            <button class="btn btn-outline-secondary" onclick="fillExample('medium')"><i data-lucide="gauge"></i>中风险示例</button>
-                            <button class="btn btn-outline-secondary" onclick="fillExample('high')"><i data-lucide="circle-alert"></i>高风险示例</button>
-                        </div>
-                        <button class="btn btn-primary" onclick="nextStep()"><i data-lucide="calculator"></i>开始评估</button>
+                    <div>
+                        <label for="weight" class="form-label">体重 kg</label>
+                        <input type="number" class="form-control" id="weight" value="75" min="30" max="200" step="0.1">
                     </div>
                 </div>
 
-                <div id="step2" style="display: none;">
-                    <div class="text-center py-5">
-                        <div class="spinner-border text-info" role="status"></div>
-                        <h2 class="h5 mt-4">正在计算风险分层与干预组合</h2>
-                        <p class="small-muted">系统正在识别异常因素、完成患者画像并筛选预算约束下的可行方案。</p>
+                <h2 class="section-title">生化指标</h2>
+                <div class="field-grid three">
+                    <div>
+                        <label for="tg" class="form-label">甘油三酯 TG</label>
+                        <input type="number" class="form-control" id="tg" value="1.5" min="0" step="0.01">
+                        <div class="form-text">mmol/L，高风险阈值 1.70</div>
+                    </div>
+                    <div>
+                        <label for="tc" class="form-label">总胆固醇 TC</label>
+                        <input type="number" class="form-control" id="tc" value="5.2" min="0" step="0.01">
+                        <div class="form-text">mmol/L，高风险阈值 6.20</div>
+                    </div>
+                    <div>
+                        <label for="hdl_c" class="form-label">HDL-C</label>
+                        <input type="number" class="form-control" id="hdl_c" value="1.2" min="0" step="0.01">
+                        <div class="form-text">mmol/L，低于 1.00 需关注</div>
+                    </div>
+                    <div>
+                        <label for="ldl_c" class="form-label">LDL-C</label>
+                        <input type="number" class="form-control" id="ldl_c" value="3.4" min="0" step="0.01">
+                        <div class="form-text">mmol/L，高风险阈值 4.10</div>
+                    </div>
+                    <div>
+                        <label for="urea_acid" class="form-label">血尿酸</label>
+                        <input type="number" class="form-control" id="urea_acid" value="360" min="0" step="1">
+                        <div class="form-text">umol/L，高风险阈值 420</div>
+                    </div>
+                    <div>
+                        <label for="budget" class="form-label">6个月预算</label>
+                        <input type="number" class="form-control" id="budget" value="2000" min="0" max="5000" step="100">
+                        <div class="form-text">元，论文默认上限 2000</div>
                     </div>
                 </div>
 
-                <div id="step3" style="display: none;">
-                    <div class="result-hero" id="riskResultCard">
+                <h2 class="section-title">中医体质与活动能力</h2>
+                <div class="field-grid">
+                    <div>
+                        <label for="tan_score" class="form-label">痰湿体质积分</label>
+                        <input type="number" class="form-control" id="tan_score" value="45" min="0" max="100">
+                        <div class="form-text">0-100 分，60 分以上提示明显痰湿偏颇</div>
+                    </div>
+                    <div>
+                        <label for="adl_score" class="form-label">ADL 活动能力评分</label>
+                        <input type="number" class="form-control" id="adl_score" value="55" min="0" max="100">
+                        <div class="form-text">0-100 分，40 分及以下提示活动受限</div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label for="apiUrl" class="form-label">后端 API 地址</label>
+                    <input type="text" class="form-control" id="apiUrl" value="/api" placeholder="/api">
+                </div>
+
+                <div id="inputAlert" class="alert alert-warning mt-4 d-none"></div>
+
+                <div class="page-actions">
+                    <span class="muted small">建议先用示例病例确认系统运行正常。</span>
+                </div>
+            </section>
+
+            <section id="step2" style="display: none;">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-info" role="status"></div>
+                    <h2 class="h5 mt-4">正在计算风险分层与干预方案</h2>
+                    <p class="muted">请稍候，系统正在调用后端模型。</p>
+                </div>
+            </section>
+
+            <section id="step3" style="display: none;">
+                <div class="result-card" id="riskResultCard">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
                         <div>
-                            <div class="small-muted mb-2">风险分层结果</div>
+                            <div class="muted small mb-1">风险分层结果</div>
                             <h2 class="h3 mb-2" id="riskHeadline"></h2>
                             <p class="mb-0" id="riskDescription"></p>
                         </div>
                         <div id="riskBadge" class="risk-badge"></div>
                     </div>
+                </div>
 
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="bar-chart-3"></i></span>
-                        <h2>指标与阈值对比</h2>
+                <h2 class="section-title">关键摘要</h2>
+                <div class="mini-grid">
+                    <div class="mini-card">
+                        <div class="mini-label">患者画像</div>
+                        <div class="mini-value" id="patientTypeName"></div>
+                        <div class="muted small mt-1" id="patientTypeDescription"></div>
                     </div>
-                    <div class="chart-wrap">
-                        <canvas id="riskChart" width="860" height="320"></canvas>
+                    <div class="mini-card">
+                        <div class="mini-label">推荐策略</div>
+                        <div class="mini-value fs-5" id="patientStrategy"></div>
+                        <div class="muted small mt-1" id="paperConclusion"></div>
                     </div>
-
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="scan-search"></i></span>
-                        <h2>异常风险因素</h2>
-                    </div>
-                    <div id="riskFactors" class="factor-list"></div>
-
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="fingerprint"></i></span>
-                        <h2>患者画像分型</h2>
-                    </div>
-                    <div class="metric-grid">
-                        <div class="metric-card">
-                            <div class="label">画像类型</div>
-                            <div class="value" id="patientTypeName"></div>
-                            <div class="small-muted mt-1" id="patientTypeDescription"></div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="label">推荐策略</div>
-                            <div class="value fs-5" id="patientStrategy"></div>
-                            <div class="small-muted mt-1" id="paperConclusion"></div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="label">BMI</div>
-                            <div class="value" id="quickBmi"></div>
-                            <div class="small-muted mt-1">由身高和体重自动计算</div>
-                        </div>
-                    </div>
-
-                    <div class="toolbar">
-                        <button class="btn btn-outline-secondary" onclick="prevStep()"><i data-lucide="arrow-left"></i>修改信息</button>
-                        <button class="btn btn-primary" onclick="showIntervention()"><i data-lucide="file-heart"></i>查看报告</button>
+                    <div class="mini-card">
+                        <div class="mini-label">BMI</div>
+                        <div class="mini-value" id="quickBmi"></div>
+                        <div class="muted small mt-1">由身高和体重自动计算</div>
                     </div>
                 </div>
 
-                <div id="step4" style="display: none;">
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="clipboard-check"></i></span>
-                        <h2>个体化干预推荐</h2>
-                    </div>
-                    <div id="optimalRecommendation"></div>
+                <h2 class="section-title">异常风险因素</h2>
+                <div id="riskFactors" class="factor-list"></div>
 
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="columns-3"></i></span>
-                        <h2>方案对比</h2>
-                    </div>
-                    <div id="alternativePlans" class="plan-grid"></div>
+                <h2 class="section-title">指标与阈值对比</h2>
+                <div class="chart-box">
+                    <canvas id="riskChart" width="860" height="320"></canvas>
+                </div>
 
-                    <div class="section-title">
-                        <span class="section-icon"><i data-lucide="notebook-tabs"></i></span>
-                        <h2>评估报告</h2>
-                    </div>
-                    <div id="reportPreview" class="report-box"></div>
-
-                    <div class="alert alert-info mt-4">
-                        <strong>模型说明：</strong>CART 决策树风险分层，论文交叉验证准确率 95.00%。本系统仅供研究参考，不作为临床诊断依据。
-                    </div>
-
-                    <div class="toolbar">
-                        <button class="btn btn-outline-secondary" onclick="prevFromIntervention()"><i data-lucide="arrow-left"></i>返回结果</button>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-outline-primary" onclick="copyReport()"><i data-lucide="copy"></i>复制报告</button>
-                            <button class="btn btn-outline-primary" onclick="printReport()"><i data-lucide="printer"></i>打印报告</button>
-                            <button class="btn btn-primary" onclick="resetForm()"><i data-lucide="rotate-ccw"></i>重新评估</button>
-                        </div>
-                    </div>
+                <div class="page-actions">
+                    <button type="button" class="btn btn-outline-secondary" id="backToInput">返回修改</button>
+                    <button type="button" class="btn btn-primary" id="showReport">查看干预报告</button>
                 </div>
             </section>
 
-            <aside class="surface side-panel">
-                <div class="section-title">
-                    <span class="section-icon"><i data-lucide="server"></i></span>
-                    <h3>服务设置</h3>
-                </div>
-                <label for="apiUrl" class="form-label">后端 API 地址</label>
-                <input type="text" class="form-control" id="apiUrl" value="/api" placeholder="/api">
-                <div class="small-muted mt-2">默认使用当前 Web 服务的 API。</div>
+            <section id="step4" style="display: none;">
+                <h2 class="section-title">个体化干预推荐</h2>
+                <div id="optimalRecommendation"></div>
 
-                <div class="section-title">
-                    <span class="section-icon"><i data-lucide="book-open-check"></i></span>
-                    <h3>病例模板</h3>
-                </div>
-                <div class="quick-grid">
-                    <div class="quick-case" onclick="fillExample('low')">
-                        <strong><span class="status-dot status-low"></span>低风险样例</strong>
-                        <div class="small-muted mt-1">指标基本正常，活动能力较好。</div>
-                    </div>
-                    <div class="quick-case" onclick="fillExample('medium')">
-                        <strong><span class="status-dot status-medium"></span>中风险样例</strong>
-                        <div class="small-muted mt-1">部分血脂指标和体质积分偏高。</div>
-                    </div>
-                    <div class="quick-case" onclick="fillExample('high')">
-                        <strong><span class="status-dot status-high"></span>高风险样例</strong>
-                        <div class="small-muted mt-1">多项代谢异常并伴活动受限。</div>
-                    </div>
+                <h2 class="section-title">备选方案对比</h2>
+                <div id="alternativePlans" class="plans"></div>
+
+                <h2 class="section-title">评估报告</h2>
+                <div id="reportPreview" class="report"></div>
+
+                <div class="alert alert-info mt-4">
+                    <strong>模型说明：</strong>CART 决策树风险分层，论文交叉验证准确率 95.00%。本系统仅供研究参考，不作为临床诊断依据。
                 </div>
 
-                <div class="section-title">
-                    <span class="section-icon"><i data-lucide="history"></i></span>
-                    <h3>评估历史</h3>
+                <div class="page-actions">
+                    <button type="button" class="btn btn-outline-secondary" id="backToResult">返回结果</button>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-primary" id="copyReportBtn">复制报告</button>
+                        <button type="button" class="btn btn-outline-primary" id="printReportBtn">打印报告</button>
+                        <button type="button" class="btn btn-primary" id="resetFormBtn">重新评估</button>
+                    </div>
                 </div>
-                <div id="historyList" class="history-list"></div>
-                <button class="btn btn-outline-secondary w-100 mt-3" onclick="clearHistory()"><i data-lucide="trash-2"></i>清空历史</button>
-            </aside>
+            </section>
         </div>
     </main>
 
@@ -690,9 +484,7 @@
         <div id="printReport"></div>
     </section>
 
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        const STORAGE_KEY = 'hyperlipidemia_assessment_history_v1';
         const thresholdMap = {
             tg: { label: 'TG', threshold: 1.7, reverse: false, unit: 'mmol/L' },
             tc: { label: 'TC', threshold: 6.2, reverse: false, unit: 'mmol/L' },
@@ -712,15 +504,23 @@
         let currentStep = 1;
         let resultData = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderHistory();
-            initIcons();
-        });
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindActions);
+        } else {
+            bindActions();
+        }
 
-        function initIcons() {
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
+        function bindActions() {
+            document.getElementById('exampleLow').addEventListener('click', () => fillExample('low'));
+            document.getElementById('exampleMedium').addEventListener('click', () => fillExample('medium'));
+            document.getElementById('exampleHigh').addEventListener('click', () => fillExample('high'));
+            document.getElementById('startAssessment').addEventListener('click', nextStep);
+            document.getElementById('backToInput').addEventListener('click', prevStep);
+            document.getElementById('showReport').addEventListener('click', showIntervention);
+            document.getElementById('backToResult').addEventListener('click', prevFromIntervention);
+            document.getElementById('copyReportBtn').addEventListener('click', copyReport);
+            document.getElementById('printReportBtn').addEventListener('click', printReport);
+            document.getElementById('resetFormBtn').addEventListener('click', resetForm);
         }
 
         function showStep(step) {
@@ -729,7 +529,7 @@
                 document.getElementById(`step${i}-indicator`).classList.toggle('active', i <= step);
             }
             currentStep = step;
-            setTimeout(initIcons, 0);
+            window.scrollTo(0, 0);
         }
 
         function nextStep() {
@@ -744,7 +544,7 @@
         }
 
         function prevStep() {
-            showStep(currentStep - 1);
+            showStep(Math.max(1, currentStep - 1));
         }
 
         function prevFromIntervention() {
@@ -753,9 +553,7 @@
 
         function resetForm() {
             resultData = null;
-            document.getElementById('topPrintBtn').disabled = true;
             showStep(1);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function getApiBaseUrl() {
@@ -781,18 +579,17 @@
 
         function validateInput() {
             const data = readFormData();
-            const required = Object.entries(data).filter(([, value]) => Number.isNaN(value));
-            if (required.length) {
+            if (Object.values(data).some(value => Number.isNaN(value))) {
                 return { ok: false, message: '请完整填写所有评估指标。' };
             }
             if (data.height < 100 || data.height > 220 || data.weight < 30 || data.weight > 200) {
                 return { ok: false, message: '身高或体重超出系统支持范围，请检查输入。' };
             }
-            if (data.tg > 20 || data.tc > 15 || data.hdl_c > 5 || data.ldl_c > 10 || data.urea_acid > 800) {
-                return { ok: false, message: '部分生化指标明显超出常规范围，请确认单位和数值。' };
-            }
             if (data.tan_score < 0 || data.tan_score > 100 || data.adl_score < 0 || data.adl_score > 100) {
                 return { ok: false, message: '痰湿积分和活动能力评分需在 0-100 分之间。' };
+            }
+            if (data.tg > 20 || data.tc > 15 || data.hdl_c > 5 || data.ldl_c > 10 || data.urea_acid > 800) {
+                return { ok: false, message: '部分生化指标明显超出常规范围，请确认单位和数值。' };
             }
             return { ok: true };
         }
@@ -813,34 +610,31 @@
             Object.entries(data).forEach(([key, value]) => {
                 if (key === 'gender') {
                     document.getElementById(value === 1 ? 'genderMale' : 'genderFemale').checked = true;
-                } else {
-                    const el = document.getElementById(key);
-                    if (el) el.value = value;
+                    return;
                 }
+                const el = document.getElementById(key);
+                if (el) el.value = value;
             });
             hideInputAlert();
         }
 
         function calculateRisk() {
             const data = readFormData();
-            const apiUrl = `${getApiBaseUrl()}/predict`;
-
-            fetch(apiUrl, {
+            fetch(`${getApiBaseUrl()}/predict`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
             .then(result => {
-                if (result.code === 0) {
-                    resultData = result.data;
-                    displayResult(result.data);
-                    saveHistory(result.data);
-                    showStep(3);
-                } else {
+                if (result.code !== 0) {
                     showInputAlert(`计算失败：${result.message}`);
                     showStep(1);
+                    return;
                 }
+                resultData = result.data;
+                displayResult(resultData);
+                showStep(3);
             })
             .catch(error => {
                 showInputAlert(`API 调用失败，请检查后端服务是否启动：${error}`);
@@ -854,18 +648,7 @@
             document.getElementById('riskBadge').textContent = risk.risk_level_name;
             document.getElementById('riskBadge').style.backgroundColor = risk.risk_color;
             document.getElementById('riskDescription').textContent = risk.description;
-
-            const card = document.getElementById('riskResultCard');
-            card.style.borderLeftColor = risk.risk_color;
-
-            const factorsContainer = document.getElementById('riskFactors');
-            if (risk.risk_factors.length > 0) {
-                factorsContainer.innerHTML = risk.risk_factors
-                    .map(factor => `<div class="factor-item">${escapeHtml(factor)}</div>`)
-                    .join('');
-            } else {
-                factorsContainer.innerHTML = '<div class="empty-state">未发现明显异常风险因素</div>';
-            }
+            document.getElementById('riskResultCard').style.borderLeftColor = risk.risk_color;
 
             const pt = data.patient_type;
             document.getElementById('patientTypeName').textContent = pt.type_name;
@@ -874,41 +657,42 @@
             document.getElementById('paperConclusion').textContent = pt.paper_conclusion;
             document.getElementById('quickBmi').textContent = `${data.input.bmi} kg/m2`;
 
+            const factors = risk.risk_factors || [];
+            document.getElementById('riskFactors').innerHTML = factors.length
+                ? factors.map(factor => `<div class="factor-item">${escapeHtml(factor)}</div>`).join('')
+                : '<div class="text-success">未发现明显异常风险因素。</div>';
+
             drawRiskChart(data);
-            document.getElementById('topPrintBtn').disabled = false;
         }
 
         function showIntervention() {
             if (!resultData) return;
             const intervention = resultData.intervention;
             const optimal = intervention.optimal_plan;
+            const alternatives = resultData.alternatives || intervention.alternatives || [];
 
             document.getElementById('optimalRecommendation').innerHTML = `
                 <div class="plan-card best">
-                    <div class="d-flex align-items-start justify-content-between gap-3">
+                    <div class="d-flex flex-wrap justify-content-between gap-3">
                         <div>
-                            <div class="small-muted mb-1">最优推荐</div>
+                            <div class="muted small">最优推荐</div>
                             <h3 class="h5 mb-2">${escapeHtml(optimal.treatment.name)}</h3>
                             <p class="mb-2">${escapeHtml(optimal.treatment.description)}</p>
-                            <div class="small-muted">运动方案：${escapeHtml(optimal.exercise ? `${optimal.intensity_name} ${optimal.frequency_name}` : '无运动方案')}</div>
+                            <div class="muted">运动方案：${escapeHtml(optimal.exercise ? `${optimal.intensity_name} ${optimal.frequency_name}` : '无运动方案')}</div>
                         </div>
-                        <span class="risk-badge" style="background: var(--ok);">推荐</span>
-                    </div>
-                    <hr>
-                    <div class="metric-grid">
-                        <div><div class="small-muted">6个月总成本</div><strong>${optimal.total_cost_6months.toFixed(0)} 元</strong></div>
-                        <div><div class="small-muted">预期总效果</div><strong>${optimal.total_effect_6months.toFixed(1)} 单位</strong></div>
-                        <div><div class="small-muted">可行方案数</div><strong>${intervention.feasible_count}</strong></div>
+                        <div>
+                            <div><strong>${optimal.total_cost_6months.toFixed(0)}</strong> 元 / 6个月</div>
+                            <div><strong>${optimal.total_effect_6months.toFixed(1)}</strong> 单位效果</div>
+                        </div>
                     </div>
                 </div>
             `;
 
-            const alternatives = resultData.alternatives || resultData.intervention.alternatives || [];
             document.getElementById('alternativePlans').innerHTML = alternatives.map((plan, index) => `
                 <div class="plan-card ${index === 0 ? 'best' : ''}">
-                    <div class="small-muted">${index === 0 ? '最优方案' : `备选方案 ${index}`}</div>
+                    <div class="muted small">${index === 0 ? '最优方案' : `备选方案 ${index}`}</div>
                     <h3 class="h6 mt-1">${escapeHtml(plan.treatment_name || plan.treatment.name)}</h3>
-                    <p class="small-muted mb-2">${escapeHtml(plan.exercise_fullname || '无运动方案')}</p>
+                    <p class="muted mb-2">${escapeHtml(plan.exercise_fullname || '无运动方案')}</p>
                     <div class="d-flex justify-content-between border-top pt-2">
                         <span>${plan.total_cost_6months.toFixed(0)} 元</span>
                         <strong>${plan.total_effect_6months.toFixed(1)} 单位</strong>
@@ -929,7 +713,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
 
-            const entries = [
+            const rows = [
                 ['tg', data.input.tg],
                 ['tc', data.input.tc],
                 ['hdl_c', data.input.hdl_c],
@@ -939,19 +723,18 @@
                 ['activity_score', data.input.activity_score]
             ];
 
-            const left = 110;
+            const left = 112;
             const top = 28;
             const rowHeight = 38;
-            const barWidth = width - left - 150;
+            const barWidth = width - left - 160;
 
             ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-            entries.forEach(([key, value], index) => {
+            rows.forEach(([key, value], index) => {
                 const item = thresholdMap[key];
                 const y = top + index * rowHeight;
-                const ratio = item.reverse ? item.threshold / Math.max(value, item.threshold) : value / item.threshold;
-                const capped = Math.min(ratio, 1.5);
-                const normalized = Math.max(0.06, capped / 1.5);
                 const risky = item.reverse ? value <= item.threshold : value >= item.threshold;
+                const ratio = item.reverse ? item.threshold / Math.max(value, item.threshold) : value / item.threshold;
+                const normalized = Math.max(0.06, Math.min(ratio, 1.5) / 1.5);
 
                 ctx.fillStyle = '#334155';
                 ctx.fillText(item.label, 12, y + 20);
@@ -960,7 +743,7 @@
                 ctx.fillStyle = risky ? '#b42318' : '#176b87';
                 ctx.fillRect(left, y, barWidth * normalized, 18);
                 ctx.fillStyle = '#334155';
-                ctx.fillText(`${value} / ${item.threshold} ${item.unit}`, left + barWidth + 16, y + 14);
+                ctx.fillText(`${value} / ${item.threshold} ${item.unit}`, left + barWidth + 14, y + 14);
             });
 
             ctx.fillStyle = '#667085';
@@ -973,27 +756,26 @@
             const risk = data.risk;
             const pt = data.patient_type;
             const plan = data.intervention.optimal_plan;
-            const factors = risk.risk_factors.length ? risk.risk_factors.map(item => `<li>${escapeHtml(item)}</li>`).join('') : '<li>未发现明显异常风险因素</li>';
+            const factors = risk.risk_factors.length
+                ? risk.risk_factors.map(item => `<li>${escapeHtml(item)}</li>`).join('')
+                : '<li>未发现明显异常风险因素</li>';
+
             const html = `
                 <h2 class="h4">高血脂风险评估报告</h2>
-                <p class="small-muted">生成时间：${new Date().toLocaleString()}</p>
+                <p class="muted">生成时间：${new Date().toLocaleString()}</p>
                 <hr>
-                <div class="row g-3">
-                    <div class="col-md-4"><strong>风险等级：</strong>${escapeHtml(risk.risk_level_name)}</div>
-                    <div class="col-md-4"><strong>患者画像：</strong>${escapeHtml(pt.type_name)}</div>
-                    <div class="col-md-4"><strong>BMI：</strong>${data.input.bmi} kg/m2</div>
-                </div>
-                <h3 class="h6 mt-4">输入摘要</h3>
-                <p>年龄 ${data.input.age} 岁，痰湿积分 ${data.input.tan_score} 分，活动能力 ${data.input.activity_score} 分，TG ${data.input.tg} mmol/L，TC ${data.input.tc} mmol/L，LDL-C ${data.input.ldl_c} mmol/L，HDL-C ${data.input.hdl_c} mmol/L，血尿酸 ${data.input.urea_acid} umol/L。</p>
+                <p><strong>风险等级：</strong>${escapeHtml(risk.risk_level_name)}</p>
+                <p><strong>患者画像：</strong>${escapeHtml(pt.type_name)}，${escapeHtml(pt.recommended_strategy)}</p>
+                <p><strong>输入摘要：</strong>年龄 ${data.input.age} 岁，BMI ${data.input.bmi} kg/m2，痰湿积分 ${data.input.tan_score} 分，活动能力 ${data.input.activity_score} 分，TG ${data.input.tg} mmol/L，TC ${data.input.tc} mmol/L，LDL-C ${data.input.ldl_c} mmol/L，HDL-C ${data.input.hdl_c} mmol/L，血尿酸 ${data.input.urea_acid} umol/L。</p>
                 <h3 class="h6 mt-4">异常因素</h3>
                 <ul>${factors}</ul>
-                <h3 class="h6 mt-4">干预建议</h3>
+                <h3 class="h6 mt-4">推荐方案</h3>
                 <p>${escapeHtml(plan.treatment.name)}：${escapeHtml(plan.treatment.description)}。运动方案：${escapeHtml(plan.exercise ? `${plan.intensity_name} ${plan.frequency_name}` : '无运动方案')}。</p>
                 <p>6个月总成本 ${plan.total_cost_6months.toFixed(0)} 元，预期改善效果 ${plan.total_effect_6months.toFixed(1)} 单位。</p>
-                <p class="small-muted mt-4">免责声明：本报告仅供科研、教学和健康管理辅助参考，不作为临床诊断、治疗或处方依据。</p>
+                <p class="muted mt-4">免责声明：本报告仅供科研、教学和健康管理辅助参考，不作为临床诊断、治疗或处方依据。</p>
             `;
             document.getElementById('reportPreview').innerHTML = html;
-            document.getElementById('printReport').innerHTML = `<div class="report-box">${html}</div>`;
+            document.getElementById('printReport').innerHTML = `<div class="report">${html}</div>`;
         }
 
         function printReport() {
@@ -1010,93 +792,6 @@
             }).catch(() => {
                 alert('复制失败，请手动选择报告内容。');
             });
-        }
-
-        function saveHistory(data) {
-            const list = loadHistory();
-            const record = {
-                id: Date.now(),
-                createdAt: new Date().toISOString(),
-                formInput: readFormData(),
-                input: data.input,
-                risk: data.risk,
-                patientType: data.patient_type,
-                intervention: data.intervention,
-                alternatives: data.alternatives
-            };
-            list.unshift(record);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 8)));
-            renderHistory();
-        }
-
-        function loadHistory() {
-            try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            } catch {
-                return [];
-            }
-        }
-
-        function renderHistory() {
-            const list = loadHistory();
-            const el = document.getElementById('historyList');
-            if (!el) return;
-            if (!list.length) {
-                el.innerHTML = '<div class="empty-state">暂无历史记录</div>';
-                return;
-            }
-            el.innerHTML = list.map(item => `
-                <div class="history-item" onclick="loadHistoryItem(${item.id})">
-                    <strong><span class="status-dot status-${item.risk.risk_level}"></span>${escapeHtml(item.risk.risk_level_name)}</strong>
-                    <div class="small-muted mt-1">${new Date(item.createdAt).toLocaleString()}</div>
-                    <div class="small-muted">BMI ${item.input.bmi}，${escapeHtml(item.patientType.type_name)}</div>
-                </div>
-            `).join('');
-        }
-
-        function loadHistoryItem(id) {
-            const item = loadHistory().find(record => record.id === id);
-            if (!item) return;
-            const input = item.input;
-            const formData = item.formInput || {
-                age: input.age,
-                height: inferHeightFromBmi(input),
-                weight: inferWeightFromBmi(input),
-                tan_score: input.tan_score,
-                tg: input.tg,
-                tc: input.tc,
-                hdl_c: input.hdl_c,
-                ldl_c: input.ldl_c,
-                urea_acid: input.urea_acid,
-                adl_score: input.activity_score,
-                budget: input.budget
-            };
-            Object.entries(formData).forEach(([key, value]) => {
-                const el = document.getElementById(key);
-                if (el && value !== undefined) el.value = value;
-            });
-            resultData = {
-                input: item.input,
-                risk: item.risk,
-                patient_type: item.patientType,
-                intervention: item.intervention,
-                alternatives: item.alternatives || []
-            };
-            displayResult(resultData);
-            showStep(3);
-        }
-
-        function inferHeightFromBmi(input) {
-            return 170;
-        }
-
-        function inferWeightFromBmi(input) {
-            return Math.round(input.bmi * 1.7 * 1.7 * 10) / 10;
-        }
-
-        function clearHistory() {
-            localStorage.removeItem(STORAGE_KEY);
-            renderHistory();
         }
 
         function escapeHtml(value) {
