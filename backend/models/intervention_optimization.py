@@ -122,7 +122,8 @@ class InterventionOptimizer:
     def generate_all_combinations(
         self,
         patient_type: str,
-        max_budget: int
+        max_budget: int,
+        features: Optional[Dict[str, float]] = None
     ) -> List[Dict[str, Any]]:
         """
         根据约束生成所有可行的干预组合
@@ -135,23 +136,26 @@ class InterventionOptimizer:
             可行组合列表
         """
         constraints = self._get_constraints_for_type(patient_type)
+        features = features or {}
         combinations = []
         
         # 调理等级范围
-        min_treat = constraints.get('min_treatment_level', 1)
-        max_treat = constraints.get('max_treatment_level', 4)
+        tan_score = features.get('tan_score_raw')
+        if tan_score is not None:
+            if tan_score <= 58:
+                min_treat = max_treat = 1
+            elif tan_score <= 61:
+                min_treat = max_treat = 2
+            else:
+                min_treat = max_treat = 3
+        else:
+            min_treat = constraints.get('min_treatment_level', 1)
+            max_treat = constraints.get('max_treatment_level', 3)
         treat_keys = [f'level_{i}' for i in range(min_treat, max_treat + 1)]
         
-        # 运动强度范围
-        intensity_map = {
-            'low': ['intensity_low'],
-            'medium': ['intensity_low', 'intensity_medium'],
-            'high': ['intensity_low', 'intensity_medium', 'intensity_high']
-        }
-        max_intensity = constraints.get('max_exercise_intensity', 'high')
-        allowed_intensities = intensity_map.get(max_intensity, intensity_map['high'])
+        allowed_intensities = self._allowed_intensities(features, constraints)
         
-        # 最低强度要求过滤
+        # 分型策略的最低强度要求过滤
         min_intensity = constraints.get('min_exercise_intensity', None)
         if min_intensity == 'medium':
             allowed_intensities = [i for i in allowed_intensities if i != 'intensity_low']
@@ -166,48 +170,105 @@ class InterventionOptimizer:
             if not constraints.get('require_exercise', False):
                 total_cost = treat['cost_per_month'] * 6
                 if total_cost <= max_budget:
-                    total_effect = treat['effect_per_month'] * 6
+                    total_effect = treat.get('effect_per_month_percent', 0) * 6
                     combinations.append({
                         'treatment': treat,
                         'treatment_key': treat_key,
                         'treatment_level': int(treat_key.split('_')[1]),
+                        'treatment_cost_6months': total_cost,
                         'exercise': None,
                         'exercise_key': None,
                         'intensity_key': None,
                         'frequency': None,
                         'total_cost_6months': total_cost,
-                        'total_effect_6months': total_effect
+                        'total_effect_6months': total_effect,
+                        'expected_tan_score_drop_percent': total_effect
                     })
             
-            # 带运动的组合
+            # 带运动的组合：原题频率为每周 1-10 次，6个月按24周计算
             for intensity_key in allowed_intensities:
                 intensity = self.exercise_plans[intensity_key]
-                # 不同频率
-                for freq_key in ['frequency_1x', 'frequency_3x']:
-                    if freq_key in intensity:
-                        exercise = intensity[freq_key]
-                        total_cost = (treat['cost_per_month'] + exercise['cost_per_month']) * 6
-                        if total_cost <= max_budget:
-                            total_effect = (treat['effect_per_month'] + exercise['effect_per_month']) * 6
-                            combinations.append({
-                                'treatment': treat,
-                                'treatment_key': treat_key,
-                                'treatment_level': int(treat_key.split('_')[1]),
-                                'exercise': exercise,
-                                'exercise_key': freq_key,
-                                'intensity_key': intensity_key,
-                                'frequency_name': '每周1次' if freq_key == 'frequency_1x' else '每周3次',
-                                'intensity_name': intensity['name'],
-                                'total_cost_6months': total_cost,
-                                'total_effect_6months': total_effect
-                            })
+                intensity_level = intensity['level']
+                max_frequency = constraints.get('max_frequency_per_week', 10)
+                for frequency_per_week in range(1, max_frequency + 1):
+                    exercise_cost = intensity['cost_per_session'] * frequency_per_week * 24
+                    treatment_cost = treat['cost_per_month'] * 6
+                    total_cost = treatment_cost + exercise_cost
+                    if total_cost <= max_budget:
+                        exercise_effect = self._exercise_effect_percent(intensity_level, frequency_per_week)
+                        treatment_effect = treat.get('effect_per_month_percent', 0) * 6
+                        total_effect = treatment_effect + exercise_effect
+                        exercise = {
+                            'duration_minutes': intensity['duration_minutes'],
+                            'cost_per_session': intensity['cost_per_session'],
+                            'frequency_per_week': frequency_per_week,
+                            'cost_6months': exercise_cost,
+                            'effect_percent_6months': exercise_effect,
+                            'tolerance': intensity['tolerance']
+                        }
+                        combinations.append({
+                            'treatment': treat,
+                            'treatment_key': treat_key,
+                            'treatment_level': int(treat_key.split('_')[1]),
+                            'treatment_cost_6months': treatment_cost,
+                            'exercise': exercise,
+                            'exercise_key': f'frequency_{frequency_per_week}x',
+                            'intensity_key': intensity_key,
+                            'frequency_name': f'每周{frequency_per_week}次',
+                            'frequency_per_week': frequency_per_week,
+                            'intensity_name': intensity['name'],
+                            'intensity_level': intensity_level,
+                            'duration_minutes': intensity['duration_minutes'],
+                            'total_cost_6months': total_cost,
+                            'total_effect_6months': total_effect,
+                            'expected_tan_score_drop_percent': total_effect
+                        })
         
         return combinations
+
+    def _allowed_intensities(self, features: Dict[str, float], constraints: Dict[str, Any]) -> List[str]:
+        """根据原题年龄约束和活动量表总分约束确定可选运动强度"""
+        intensity_map = {
+            'low': ['intensity_low'],
+            'medium': ['intensity_low', 'intensity_medium'],
+            'high': ['intensity_low', 'intensity_medium', 'intensity_high']
+        }
+        age = features.get('age')
+        activity = features.get('activity_score')
+
+        max_level = 3
+        if age is not None:
+            if age >= 80:
+                max_level = min(max_level, 1)
+            elif age >= 60:
+                max_level = min(max_level, 2)
+
+        if activity is not None:
+            if activity < 40:
+                max_level = min(max_level, 1)
+            elif activity < 60:
+                max_level = min(max_level, 2)
+
+        max_intensity = constraints.get('max_exercise_intensity', 'high')
+        allowed = intensity_map.get(max_intensity, intensity_map['high'])
+        level_map = {'intensity_low': 1, 'intensity_medium': 2, 'intensity_high': 3}
+        return [item for item in allowed if level_map[item] <= max_level]
+
+    def _exercise_effect_percent(self, intensity_level: int, frequency_per_week: int) -> float:
+        """
+        原题假设：每周训练少于5次时痰湿积分基本稳定；每周5次时，
+        每提升一级强度，每月预期下降3%；同强度下每周增加1次，每月多下降1%。
+        """
+        if frequency_per_week < 5:
+            return 0
+        monthly_percent = intensity_level * 3 + max(0, frequency_per_week - 5)
+        return monthly_percent * 6
     
     def optimize(
         self,
         patient_type: str,
-        max_budget: Optional[int] = None
+        max_budget: Optional[int] = None,
+        features: Optional[Dict[str, float]] = None
     ) -> Dict[str, Any]:
         """
         寻找最优干预方案
@@ -223,13 +284,13 @@ class InterventionOptimizer:
             max_budget = self.default_constraints['max_total_cost_6months']
         
         type_info = self.patient_type_definitions[patient_type]
-        all_combinations = self.generate_all_combinations(patient_type, max_budget)
+        all_combinations = self.generate_all_combinations(patient_type, max_budget, features)
         
         if not all_combinations:
             # 如果没有满足约束的组合，放宽约束重试
             print(f"警告：没有找到满足当前约束的组合，尝试放宽约束")
             # 放宽一级调理等级
-            all_combinations = self.generate_all_combinations(patient_type, max_budget + 500)
+            all_combinations = self.generate_all_combinations(patient_type, max_budget + 500, features)
         
         # 按效果降序排序
         all_combinations.sort(key=lambda x: x['total_effect_6months'], reverse=True)
@@ -255,7 +316,8 @@ class InterventionOptimizer:
             'max_budget': max_budget,
             'optimal_plan': best,
             'recommendation': recommendation,
-            'feasible_count': len(all_combinations)
+            'feasible_count': len(all_combinations),
+            'constraints_summary': self._build_constraints_summary(patient_type, features or {})
         }
         
         return result
@@ -264,10 +326,11 @@ class InterventionOptimizer:
         self,
         patient_type: str,
         max_budget: int,
+        features: Optional[Dict[str, float]] = None,
         n: int = 3
     ) -> List[Dict[str, Any]]:
         """获取前N个最优方案供选择"""
-        all_combinations = self.generate_all_combinations(patient_type, max_budget)
+        all_combinations = self.generate_all_combinations(patient_type, max_budget, features)
         all_combinations.sort(key=lambda x: x['total_effect_6months'], reverse=True)
         
         # 去重并返回前n个
@@ -288,6 +351,50 @@ class InterventionOptimizer:
                     break
         
         return result
+
+    def _build_constraints_summary(self, patient_type: str, features: Dict[str, float]) -> Dict[str, Any]:
+        """生成前端可展示的约束说明"""
+        age = features.get('age')
+        activity = features.get('activity_score')
+        tan_score = features.get('tan_score_raw')
+        allowed = self._allowed_intensities(features, self._get_constraints_for_type(patient_type))
+        return {
+            'source': 'MathorCup C题附表2、附表3',
+            'tan_score_rule': self._tan_score_rule_text(tan_score),
+            'age_rule': self._age_rule_text(age),
+            'activity_rule': self._activity_rule_text(activity),
+            'allowed_intensities': [self.exercise_plans[key]['name'] for key in allowed],
+            'frequency_range': f"每周1-{self._get_constraints_for_type(patient_type).get('max_frequency_per_week', 10)}次",
+            'cycle': '6个月，按24周计算',
+            'budget_rule': '单人6个月总成本建议不超过2000元'
+        }
+
+    def _tan_score_rule_text(self, tan_score: Optional[float]) -> str:
+        if tan_score is None:
+            return '按痰湿积分匹配基础/中度/强化调理'
+        if tan_score <= 58:
+            return f'痰湿积分{tan_score:.0f}分，匹配基础调理'
+        if tan_score <= 61:
+            return f'痰湿积分{tan_score:.0f}分，匹配中度调理'
+        return f'痰湿积分{tan_score:.0f}分，匹配强化调理'
+
+    def _age_rule_text(self, age: Optional[float]) -> str:
+        if age is None:
+            return '按年龄限制最大运动强度'
+        if age < 60:
+            return f'{age:.0f}岁，可选择1/2/3级活动强度'
+        if age < 80:
+            return f'{age:.0f}岁，可选择1/2级活动强度'
+        return f'{age:.0f}岁，仅建议1级活动强度'
+
+    def _activity_rule_text(self, activity: Optional[float]) -> str:
+        if activity is None:
+            return '按活动量表总分限制最大运动强度'
+        if activity < 40:
+            return f'活动量表{activity:.0f}分，仅建议1级活动强度'
+        if activity < 60:
+            return f'活动量表{activity:.0f}分，可选择1/2级活动强度'
+        return f'活动量表{activity:.0f}分，可选择1/2/3级活动强度'
     
     def _format_recommendation(self, plan: Dict[str, Any]) -> str:
         """格式化推荐建议为自然语言"""
@@ -301,9 +408,9 @@ class InterventionOptimizer:
         
         if plan['exercise']:
             lines.append("")
-            lines.append(f"**运动方案**: {plan['intensity_name']}, {plan['frequency_name']}")
+            lines.append(f"**运动方案**: {plan['intensity_name']}, {plan['frequency_name']}, 每次{plan['duration_minutes']}分钟")
             lines.append(f"- 适用: {plan['exercise']['tolerance']}")
-            lines.append(f"- 月费用: **{plan['exercise']['cost_per_month']}** 元")
+            lines.append(f"- 单次费用: **{plan['exercise']['cost_per_session']}** 元")
         
         lines.append("")
         lines.append(f"### 费用与效果")
@@ -311,121 +418,6 @@ class InterventionOptimizer:
         lines.append(f"- 预期总效果: **{plan['total_effect_6months']:.1f}** 单位 (痰湿积分改善预期)")
         
         return "\n".join(lines)
-
-
-# 创建配置文件 - 使用相对于backend目录的路径
-import os
-config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config')
-if not os.path.exists(config_dir):
-    os.makedirs(config_dir)
-
-config_path = os.path.join(config_dir, 'intervention_costs.json')
-if not os.path.exists(config_path):
-    with open(config_path, 'w', encoding='utf-8') as f:
-        json.dump({
-        "name": "干预方案成本和效果参数配置",
-        "description": "中医调理等级、运动强度的成本和效果参数，基于论文假设",
-        "version": "1.0",
-        "调理等级": {
-            "level_1": {
-                "name": "基础调理",
-                "cost_per_month": 80,
-                "effect_per_month": 0.8,
-                "description": "饮食指导 + 生活方式建议"
-            },
-            "level_2": {
-                "name": "标准调理",
-                "cost_per_month": 160,
-                "effect_per_month": 1.5,
-                "description": "基础调理 + 中成药调理"
-            },
-            "level_3": {
-                "name": "强化调理",
-                "cost_per_month": 280,
-                "effect_per_month": 2.2,
-                "description": "标准调理 + 穴位按摩 + 定期随访"
-            },
-            "level_4": {
-                "name": "专业调理",
-                "cost_per_month": 400,
-                "effect_per_month": 2.8,
-                "description": "强化调理 + 中医师面诊"
-            }
-        },
-        "运动方案": {
-            "intensity_low": {
-                "name": "低强度运动",
-                "frequency_1x": {
-                    "cost_per_month": 30,
-                    "effect_per_month": 0.5,
-                    "tolerance": "适合高龄、功能受限患者"
-                },
-                "frequency_3x": {
-                    "cost_per_month": 60,
-                    "effect_per_month": 0.9,
-                    "tolerance": "适合高龄、功能受限患者"
-                }
-            },
-            "intensity_medium": {
-                "name": "中等强度运动",
-                "frequency_1x": {
-                    "cost_per_month": 50,
-                    "effect_per_month": 0.8,
-                    "tolerance": "适合身体状况一般患者"
-                },
-                "frequency_3x": {
-                    "cost_per_month": 100,
-                    "effect_per_month": 1.5,
-                    "tolerance": "适合身体状况一般患者"
-                }
-            },
-            "intensity_high": {
-                "name": "高强度运动",
-                "frequency_1x": {
-                    "cost_per_month": 80,
-                    "effect_per_month": 1.2,
-                    "tolerance": "适合年轻、身体状况良好患者"
-                },
-                "frequency_3x": {
-                    "cost_per_month": 160,
-                    "effect_per_month": 2.2,
-                    "tolerance": "适合年轻、身体状况良好患者"
-                }
-            }
-        },
-        "default_constraints": {
-            "max_total_cost_6months": 2000,
-            "min_expected_effect": 5
-        },
-        "patient_type_rules": {
-            "metabolic": {
-                "name": "代谢异常主导型",
-                "description": "血脂异常为主，体质和活动能力尚可",
-                "prefer_strategy": "优先强化调理",
-                "constraints": {
-                    "min_treatment_level": 2
-                }
-            },
-            "obesity": {
-                "name": "肥胖并发型",
-                "description": "BMI超标 + 痰湿质 + 代谢异常",
-                "prefer_strategy": "调理 + 运动联合干预",
-                "constraints": {
-                    "require_exercise": True,
-                    "min_exercise_intensity": "medium"
-                }
-            },
-            "function_limited": {
-                "name": "功能受限型",
-                "description": "活动能力下降 + 高龄 + 多种并发症",
-                "prefer_strategy": "低强度稳步改善方案",
-                "constraints": {
-                    "max_treatment_level": 3,
-                    "max_exercise_intensity": "low"
-                }
-            }
-        }
-        }, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

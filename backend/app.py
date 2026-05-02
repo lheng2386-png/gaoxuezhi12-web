@@ -211,13 +211,15 @@ def predict():
         budget = data.get('budget', 2000)
         intervention_result = intervention_optimizer.optimize(
             patient_type_result['patient_type'],
-            max_budget=budget
+            max_budget=budget,
+            features=features
         )
         
         # 获取多个备选方案
         alternative_plans = intervention_optimizer.get_top_n_plans(
             patient_type_result['patient_type'],
             max_budget=budget,
+            features=features,
             n=3
         )
         intervention_result['alternatives'] = alternative_plans

@@ -24,7 +24,9 @@
 
         body {
             color: var(--ink);
-            background: var(--page);
+            background:
+                linear-gradient(180deg, #eef7f8 0, var(--page) 280px),
+                var(--page);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
         }
 
@@ -38,12 +40,29 @@
             color: var(--brand);
         }
 
+        .app-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .app-status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--ok);
+            display: inline-block;
+        }
+
         .hero {
-            padding: 26px 0 18px;
+            padding: 24px 0 16px;
         }
 
         .hero h1 {
-            font-size: clamp(1.6rem, 3vw, 2.35rem);
+            font-size: clamp(1.55rem, 3vw, 2.2rem);
             font-weight: 760;
             margin: 0;
         }
@@ -59,16 +78,31 @@
             border: 1px solid var(--line);
             border-radius: 8px;
             padding: 22px;
+            box-shadow: 0 12px 28px rgba(31, 41, 55, 0.06);
+        }
+
+        .form-section {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 18px;
+            background: #fbfdff;
+            margin-top: 14px;
         }
 
         .section-title {
             font-size: 1.08rem;
             font-weight: 760;
-            margin: 26px 0 14px;
+            margin: 0 0 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
 
-        .section-title:first-child {
-            margin-top: 0;
+        .section-title small {
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 0.86rem;
         }
 
         .stepbar {
@@ -79,7 +113,7 @@
         }
 
         .step {
-            padding: 10px 12px;
+            padding: 9px 12px;
             border: 1px solid var(--line);
             border-radius: 8px;
             color: var(--muted);
@@ -92,6 +126,18 @@
             color: var(--brand);
             border-color: rgba(23, 107, 135, 0.35);
             background: var(--brand-soft);
+        }
+
+        .command-strip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            border: 1px solid rgba(23, 107, 135, 0.22);
+            border-radius: 8px;
+            background: #f2fbfc;
+            padding: 14px;
+            margin-bottom: 18px;
         }
 
         .field-grid {
@@ -119,7 +165,6 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 20px;
         }
 
         .btn {
@@ -139,9 +184,9 @@
 
         .result-card {
             border: 1px solid var(--line);
-            border-left: 6px solid var(--brand);
+            border-top: 6px solid var(--brand);
             border-radius: 8px;
-            padding: 18px;
+            padding: 20px;
             background: #ffffff;
         }
 
@@ -169,6 +214,10 @@
             background: #ffffff;
         }
 
+        .mini-card {
+            background: #fbfdff;
+        }
+
         .mini-label {
             color: var(--muted);
             font-size: 0.9rem;
@@ -185,7 +234,7 @@
         }
 
         .factor-item {
-            border: 1px solid #f2d38f;
+            border: 1px solid #f0d28b;
             border-radius: 8px;
             padding: 10px 12px;
             background: #fff8e5;
@@ -208,6 +257,50 @@
         .plan-card.best {
             border-color: rgba(46, 125, 50, 0.45);
             background: #f3fbf4;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .detail-item {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 10px;
+        }
+
+        .detail-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .detail-item strong {
+            display: block;
+            margin-top: 2px;
+        }
+
+        .rule-list {
+            margin: 10px 0 0;
+            padding-left: 18px;
+        }
+
+        details.advanced {
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 14px;
+            background: #ffffff;
+            margin-top: 14px;
+        }
+
+        details.advanced summary {
+            cursor: pointer;
+            color: var(--brand);
+            font-weight: 650;
         }
 
         .report {
@@ -235,15 +328,27 @@
         }
 
         @media (max-width: 900px) {
+            .command-strip {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
             .field-grid,
             .field-grid.three,
             .mini-grid,
-            .plans {
+            .plans,
+            .detail-grid {
                 grid-template-columns: 1fr;
             }
 
             .stepbar {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .quick-actions,
+            .quick-actions .btn,
+            #startAssessment {
+                width: 100%;
             }
         }
 
@@ -284,7 +389,10 @@
                 <div class="app-title">高血脂风险预警系统</div>
                 <div class="small muted">Web版 V1.0</div>
             </div>
-            <a href="/about" class="btn btn-outline-secondary btn-sm">关于系统</a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="app-status">本地服务运行中</span>
+                <a href="/about" class="btn btn-outline-secondary btn-sm">关于系统</a>
+            </div>
         </div>
     </header>
 
@@ -305,94 +413,109 @@
             </div>
 
             <section id="step1">
-                <div class="quick-actions">
-                    <button type="button" class="btn btn-outline-success" id="exampleLow">低风险示例</button>
-                    <button type="button" class="btn btn-outline-warning" id="exampleMedium">中风险示例</button>
-                    <button type="button" class="btn btn-outline-danger" id="exampleHigh">高风险示例</button>
-                    <button type="button" class="btn btn-primary" id="startAssessment">开始评估</button>
+                <div class="command-strip">
+                    <div>
+                        <div class="fw-bold mb-1">快速开始</div>
+                        <div class="muted small">可先选择示例病例，也可以直接填写下方表单。</div>
+                    </div>
+                    <div class="quick-actions">
+                        <button type="button" class="btn btn-outline-success" id="exampleLow" onclick="fillExample('low')">低风险</button>
+                        <button type="button" class="btn btn-outline-warning" id="exampleMedium" onclick="fillExample('medium')">中风险</button>
+                        <button type="button" class="btn btn-outline-danger" id="exampleHigh" onclick="fillExample('high')">高风险</button>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="startAssessment" onclick="nextStep()">开始评估</button>
                 </div>
 
-                <h2 class="section-title">基本信息</h2>
-                <div class="field-grid">
-                    <div>
-                        <label for="age" class="form-label">年龄</label>
-                        <input type="number" class="form-control" id="age" value="55" min="18" max="120">
-                    </div>
-                    <div>
-                        <label class="form-label">性别</label>
-                        <div class="d-flex gap-3 pt-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked>
-                                <label class="form-check-label" for="genderMale">男</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="0">
-                                <label class="form-check-label" for="genderFemale">女</label>
+                <div class="form-section">
+                    <h2 class="section-title">基本信息 <small>用于计算 BMI 和基础画像</small></h2>
+                    <div class="field-grid">
+                        <div>
+                            <label for="age" class="form-label">年龄</label>
+                            <input type="number" class="form-control" id="age" value="55" min="18" max="120">
+                        </div>
+                        <div>
+                            <label class="form-label">性别</label>
+                            <div class="d-flex gap-3 pt-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" id="genderMale" value="1" checked>
+                                    <label class="form-check-label" for="genderMale">男</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="0">
+                                    <label class="form-check-label" for="genderFemale">女</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div>
-                        <label for="height" class="form-label">身高 cm</label>
-                        <input type="number" class="form-control" id="height" value="170" min="100" max="220">
-                    </div>
-                    <div>
-                        <label for="weight" class="form-label">体重 kg</label>
-                        <input type="number" class="form-control" id="weight" value="75" min="30" max="200" step="0.1">
-                    </div>
-                </div>
-
-                <h2 class="section-title">生化指标</h2>
-                <div class="field-grid three">
-                    <div>
-                        <label for="tg" class="form-label">甘油三酯 TG</label>
-                        <input type="number" class="form-control" id="tg" value="1.5" min="0" step="0.01">
-                        <div class="form-text">mmol/L，高风险阈值 1.70</div>
-                    </div>
-                    <div>
-                        <label for="tc" class="form-label">总胆固醇 TC</label>
-                        <input type="number" class="form-control" id="tc" value="5.2" min="0" step="0.01">
-                        <div class="form-text">mmol/L，高风险阈值 6.20</div>
-                    </div>
-                    <div>
-                        <label for="hdl_c" class="form-label">HDL-C</label>
-                        <input type="number" class="form-control" id="hdl_c" value="1.2" min="0" step="0.01">
-                        <div class="form-text">mmol/L，低于 1.00 需关注</div>
-                    </div>
-                    <div>
-                        <label for="ldl_c" class="form-label">LDL-C</label>
-                        <input type="number" class="form-control" id="ldl_c" value="3.4" min="0" step="0.01">
-                        <div class="form-text">mmol/L，高风险阈值 4.10</div>
-                    </div>
-                    <div>
-                        <label for="urea_acid" class="form-label">血尿酸</label>
-                        <input type="number" class="form-control" id="urea_acid" value="360" min="0" step="1">
-                        <div class="form-text">umol/L，高风险阈值 420</div>
-                    </div>
-                    <div>
-                        <label for="budget" class="form-label">6个月预算</label>
-                        <input type="number" class="form-control" id="budget" value="2000" min="0" max="5000" step="100">
-                        <div class="form-text">元，论文默认上限 2000</div>
+                        <div>
+                            <label for="height" class="form-label">身高 cm</label>
+                            <input type="number" class="form-control" id="height" value="170" min="100" max="220">
+                        </div>
+                        <div>
+                            <label for="weight" class="form-label">体重 kg</label>
+                            <input type="number" class="form-control" id="weight" value="75" min="30" max="200" step="0.1">
+                        </div>
                     </div>
                 </div>
 
-                <h2 class="section-title">中医体质与活动能力</h2>
-                <div class="field-grid">
-                    <div>
-                        <label for="tan_score" class="form-label">痰湿体质积分</label>
-                        <input type="number" class="form-control" id="tan_score" value="45" min="0" max="100">
-                        <div class="form-text">0-100 分，60 分以上提示明显痰湿偏颇</div>
-                    </div>
-                    <div>
-                        <label for="adl_score" class="form-label">ADL 活动能力评分</label>
-                        <input type="number" class="form-control" id="adl_score" value="55" min="0" max="100">
-                        <div class="form-text">0-100 分，40 分及以下提示活动受限</div>
+                <div class="form-section">
+                    <h2 class="section-title">生化指标 <small>核心血脂和代谢指标</small></h2>
+                    <div class="field-grid three">
+                        <div>
+                            <label for="tg" class="form-label">甘油三酯 TG</label>
+                            <input type="number" class="form-control" id="tg" value="1.5" min="0" step="0.01">
+                            <div class="form-text">mmol/L，高风险阈值 1.70</div>
+                        </div>
+                        <div>
+                            <label for="tc" class="form-label">总胆固醇 TC</label>
+                            <input type="number" class="form-control" id="tc" value="5.2" min="0" step="0.01">
+                            <div class="form-text">mmol/L，高风险阈值 6.20</div>
+                        </div>
+                        <div>
+                            <label for="hdl_c" class="form-label">HDL-C</label>
+                            <input type="number" class="form-control" id="hdl_c" value="1.2" min="0" step="0.01">
+                            <div class="form-text">mmol/L，低于 1.00 需关注</div>
+                        </div>
+                        <div>
+                            <label for="ldl_c" class="form-label">LDL-C</label>
+                            <input type="number" class="form-control" id="ldl_c" value="3.4" min="0" step="0.01">
+                            <div class="form-text">mmol/L，高风险阈值 4.10</div>
+                        </div>
+                        <div>
+                            <label for="urea_acid" class="form-label">血尿酸</label>
+                            <input type="number" class="form-control" id="urea_acid" value="360" min="0" step="1">
+                            <div class="form-text">umol/L，高风险阈值 420</div>
+                        </div>
+                        <div>
+                            <label for="budget" class="form-label">6个月预算</label>
+                            <input type="number" class="form-control" id="budget" value="2000" min="0" max="5000" step="100">
+                            <div class="form-text">元，论文默认上限 2000</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <label for="apiUrl" class="form-label">后端 API 地址</label>
-                    <input type="text" class="form-control" id="apiUrl" value="/api" placeholder="/api">
+                <div class="form-section">
+                    <h2 class="section-title">中医体质与活动能力 <small>补充分层依据</small></h2>
+                    <div class="field-grid">
+                        <div>
+                            <label for="tan_score" class="form-label">痰湿体质积分</label>
+                            <input type="number" class="form-control" id="tan_score" value="45" min="0" max="100">
+                            <div class="form-text">0-100 分，60 分以上提示明显痰湿偏颇</div>
+                        </div>
+                        <div>
+                            <label for="adl_score" class="form-label">ADL 活动能力评分</label>
+                            <input type="number" class="form-control" id="adl_score" value="55" min="0" max="100">
+                            <div class="form-text">0-100 分，40 分及以下提示活动受限</div>
+                        </div>
+                    </div>
                 </div>
+
+                <details class="advanced">
+                    <summary>高级设置</summary>
+                    <div class="mt-3">
+                        <label for="apiUrl" class="form-label">后端 API 地址</label>
+                        <input type="text" class="form-control" id="apiUrl" value="/api" placeholder="/api">
+                    </div>
+                </details>
 
                 <div id="inputAlert" class="alert alert-warning mt-4 d-none"></div>
 
@@ -449,8 +572,8 @@
                 </div>
 
                 <div class="page-actions">
-                    <button type="button" class="btn btn-outline-secondary" id="backToInput">返回修改</button>
-                    <button type="button" class="btn btn-primary" id="showReport">查看干预报告</button>
+                    <button type="button" class="btn btn-outline-secondary" id="backToInput" onclick="prevStep()">返回修改</button>
+                    <button type="button" class="btn btn-primary" id="showReport" onclick="showIntervention()">查看干预报告</button>
                 </div>
             </section>
 
@@ -469,11 +592,11 @@
                 </div>
 
                 <div class="page-actions">
-                    <button type="button" class="btn btn-outline-secondary" id="backToResult">返回结果</button>
+                    <button type="button" class="btn btn-outline-secondary" id="backToResult" onclick="prevFromIntervention()">返回结果</button>
                     <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-outline-primary" id="copyReportBtn">复制报告</button>
-                        <button type="button" class="btn btn-outline-primary" id="printReportBtn">打印报告</button>
-                        <button type="button" class="btn btn-primary" id="resetFormBtn">重新评估</button>
+                        <button type="button" class="btn btn-outline-primary" id="copyReportBtn" onclick="copyReport()">复制报告</button>
+                        <button type="button" class="btn btn-outline-primary" id="printReportBtn" onclick="printReport()">打印报告</button>
+                        <button type="button" class="btn btn-primary" id="resetFormBtn" onclick="resetForm()">重新评估</button>
                     </div>
                 </div>
             </section>
@@ -503,25 +626,6 @@
 
         let currentStep = 1;
         let resultData = null;
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', bindActions);
-        } else {
-            bindActions();
-        }
-
-        function bindActions() {
-            document.getElementById('exampleLow').addEventListener('click', () => fillExample('low'));
-            document.getElementById('exampleMedium').addEventListener('click', () => fillExample('medium'));
-            document.getElementById('exampleHigh').addEventListener('click', () => fillExample('high'));
-            document.getElementById('startAssessment').addEventListener('click', nextStep);
-            document.getElementById('backToInput').addEventListener('click', prevStep);
-            document.getElementById('showReport').addEventListener('click', showIntervention);
-            document.getElementById('backToResult').addEventListener('click', prevFromIntervention);
-            document.getElementById('copyReportBtn').addEventListener('click', copyReport);
-            document.getElementById('printReportBtn').addEventListener('click', printReport);
-            document.getElementById('resetFormBtn').addEventListener('click', resetForm);
-        }
 
         function showStep(step) {
             for (let i = 1; i <= 4; i++) {
@@ -648,7 +752,7 @@
             document.getElementById('riskBadge').textContent = risk.risk_level_name;
             document.getElementById('riskBadge').style.backgroundColor = risk.risk_color;
             document.getElementById('riskDescription').textContent = risk.description;
-            document.getElementById('riskResultCard').style.borderLeftColor = risk.risk_color;
+            document.getElementById('riskResultCard').style.borderTopColor = risk.risk_color;
 
             const pt = data.patient_type;
             document.getElementById('patientTypeName').textContent = pt.type_name;
@@ -670,6 +774,7 @@
             const intervention = resultData.intervention;
             const optimal = intervention.optimal_plan;
             const alternatives = resultData.alternatives || intervention.alternatives || [];
+            const rules = intervention.constraints_summary || {};
 
             document.getElementById('optimalRecommendation').innerHTML = `
                 <div class="plan-card best">
@@ -678,12 +783,28 @@
                             <div class="muted small">最优推荐</div>
                             <h3 class="h5 mb-2">${escapeHtml(optimal.treatment.name)}</h3>
                             <p class="mb-2">${escapeHtml(optimal.treatment.description)}</p>
-                            <div class="muted">运动方案：${escapeHtml(optimal.exercise ? `${optimal.intensity_name} ${optimal.frequency_name}` : '无运动方案')}</div>
+                            <div class="muted">${escapeHtml(exerciseText(optimal))}</div>
                         </div>
                         <div>
                             <div><strong>${optimal.total_cost_6months.toFixed(0)}</strong> 元 / 6个月</div>
-                            <div><strong>${optimal.total_effect_6months.toFixed(1)}</strong> 单位效果</div>
+                            <div><strong>${optimal.expected_tan_score_drop_percent.toFixed(1)}%</strong> 预期痰湿积分下降</div>
                         </div>
+                    </div>
+                    <div class="detail-grid">
+                        <div class="detail-item"><span>调理费用</span><strong>${(optimal.treatment_cost_6months || optimal.treatment.cost_per_month * 6).toFixed(0)} 元</strong></div>
+                        <div class="detail-item"><span>运动费用</span><strong>${optimal.exercise ? optimal.exercise.cost_6months.toFixed(0) : 0} 元</strong></div>
+                        <div class="detail-item"><span>活动频率</span><strong>${escapeHtml(optimal.exercise ? optimal.frequency_name : '不安排')}</strong></div>
+                        <div class="detail-item"><span>单次时长</span><strong>${optimal.exercise ? `${optimal.duration_minutes} 分钟` : '-'}</strong></div>
+                    </div>
+                    <hr>
+                    <div>
+                        <strong>匹配依据</strong>
+                        <ul class="rule-list">
+                            <li>${escapeHtml(rules.tan_score_rule || '按痰湿积分匹配调理等级')}</li>
+                            <li>${escapeHtml(rules.age_rule || '按年龄约束活动强度')}</li>
+                            <li>${escapeHtml(rules.activity_rule || '按活动量表总分约束活动强度')}</li>
+                            <li>${escapeHtml(rules.cycle || '6个月周期')}；${escapeHtml(rules.budget_rule || '总成本不超过预算上限')}</li>
+                        </ul>
                     </div>
                 </div>
             `;
@@ -692,10 +813,10 @@
                 <div class="plan-card ${index === 0 ? 'best' : ''}">
                     <div class="muted small">${index === 0 ? '最优方案' : `备选方案 ${index}`}</div>
                     <h3 class="h6 mt-1">${escapeHtml(plan.treatment_name || plan.treatment.name)}</h3>
-                    <p class="muted mb-2">${escapeHtml(plan.exercise_fullname || '无运动方案')}</p>
+                    <p class="muted mb-2">${escapeHtml(exerciseText(plan))}</p>
                     <div class="d-flex justify-content-between border-top pt-2">
                         <span>${plan.total_cost_6months.toFixed(0)} 元</span>
-                        <strong>${plan.total_effect_6months.toFixed(1)} 单位</strong>
+                        <strong>${plan.expected_tan_score_drop_percent.toFixed(1)}%</strong>
                     </div>
                 </div>
             `).join('');
@@ -756,6 +877,7 @@
             const risk = data.risk;
             const pt = data.patient_type;
             const plan = data.intervention.optimal_plan;
+            const rules = data.intervention.constraints_summary || {};
             const factors = risk.risk_factors.length
                 ? risk.risk_factors.map(item => `<li>${escapeHtml(item)}</li>`).join('')
                 : '<li>未发现明显异常风险因素</li>';
@@ -769,13 +891,40 @@
                 <p><strong>输入摘要：</strong>年龄 ${data.input.age} 岁，BMI ${data.input.bmi} kg/m2，痰湿积分 ${data.input.tan_score} 分，活动能力 ${data.input.activity_score} 分，TG ${data.input.tg} mmol/L，TC ${data.input.tc} mmol/L，LDL-C ${data.input.ldl_c} mmol/L，HDL-C ${data.input.hdl_c} mmol/L，血尿酸 ${data.input.urea_acid} umol/L。</p>
                 <h3 class="h6 mt-4">异常因素</h3>
                 <ul>${factors}</ul>
+                <h3 class="h6 mt-4">约束依据</h3>
+                <ul>
+                    <li>${escapeHtml(rules.tan_score_rule || '按痰湿积分匹配调理等级')}</li>
+                    <li>${escapeHtml(rules.age_rule || '按年龄约束活动强度')}</li>
+                    <li>${escapeHtml(rules.activity_rule || '按活动量表总分约束活动强度')}</li>
+                    <li>${escapeHtml(rules.frequency_range || '每周1-10次')}；${escapeHtml(rules.cycle || '6个月，按24周计算')}</li>
+                </ul>
                 <h3 class="h6 mt-4">推荐方案</h3>
-                <p>${escapeHtml(plan.treatment.name)}：${escapeHtml(plan.treatment.description)}。运动方案：${escapeHtml(plan.exercise ? `${plan.intensity_name} ${plan.frequency_name}` : '无运动方案')}。</p>
-                <p>6个月总成本 ${plan.total_cost_6months.toFixed(0)} 元，预期改善效果 ${plan.total_effect_6months.toFixed(1)} 单位。</p>
+                <p>${escapeHtml(plan.treatment.name)}：${escapeHtml(plan.treatment.description)}。${escapeHtml(exerciseText(plan))}。</p>
+                <p>6个月总成本 ${plan.total_cost_6months.toFixed(0)} 元，其中调理费用 ${(plan.treatment_cost_6months || plan.treatment.cost_per_month * 6).toFixed(0)} 元，运动费用 ${plan.exercise ? plan.exercise.cost_6months.toFixed(0) : 0} 元；预期痰湿积分下降 ${plan.expected_tan_score_drop_percent.toFixed(1)}%。</p>
+                <h3 class="h6 mt-4">执行建议</h3>
+                <p>${escapeHtml(executionAdvice(plan, pt.patient_type))}</p>
                 <p class="muted mt-4">免责声明：本报告仅供科研、教学和健康管理辅助参考，不作为临床诊断、治疗或处方依据。</p>
             `;
             document.getElementById('reportPreview').innerHTML = html;
             document.getElementById('printReport').innerHTML = `<div class="report">${html}</div>`;
+        }
+
+        function exerciseText(plan) {
+            if (!plan.exercise) return '运动方案：不安排专项活动干预';
+            return `运动方案：${plan.intensity_name}，${plan.frequency_name}，每次${plan.duration_minutes}分钟，单次成本${plan.exercise.cost_per_session}元`;
+        }
+
+        function executionAdvice(plan, patientType) {
+            if (!plan.exercise) {
+                return '以饮食调理和体质调理为主，每月复查痰湿积分和血脂指标，根据变化再决定是否增加活动干预。';
+            }
+            if (patientType === 'function_limited') {
+                return '建议从低强度、固定频次开始，重点观察疲劳、气短、关节不适等耐受情况，必要时降低频次。';
+            }
+            if (patientType === 'obesity') {
+                return '建议保持调理和活动干预同步推进，优先保证每周训练频次，同时配合饮食控制和体重管理。';
+            }
+            return '建议在完成调理方案的基础上保持规律活动，若耐受良好，可在专业指导下逐步提高频次。';
         }
 
         function printReport() {
