@@ -1,10 +1,11 @@
-# 高血脂风险分层预警与干预推荐系统 V1.0
+# 高血脂风险分层预警与干预推荐系统 Web版 V1.0
 
 ## 项目简介
 
 基于数模论文《**基于中西医融合信息的高血脂风险识别、分层预警与干预优化研究**》（队伍编号: CMC2604725），完整复现论文三大核心算法，实现为可运行的软件系统，适用于本科软件著作权申请。
 
-- ✅ **完整前后端分离架构** - 前端HTML+JS + 后端Python Flask
+- ✅ **Web单服务架构** - Flask 同时提供网页与 REST API，启动后直接访问浏览器使用
+- ✅ **完整前后端分离代码** - 前端HTML+JS + 后端Python Flask API
 - ✅ **100% 复现论文算法** - 三大核心模块完整实现，不修改论文逻辑
 - ✅ **功能精简够用** - 满足本科软著标准，代码量充足，结构清晰
 
@@ -13,10 +14,12 @@
 ```
 hyperlipidemia-risk-system/
 ├── README.md                 # 项目说明（本文件）
+├── requirements.txt          # Web版一键安装依赖
 ├── 软著申请说明.md            # 软著申请专用说明
 ├── backend/                  # 后端Python
 │   ├── app.py                # Flask API入口
-│   ├── requirements.txt      # Python依赖
+│   ├── requirements.txt      # Web运行依赖
+│   ├── requirements-ml.txt   # 可选训练/SHAP分析依赖
 │   ├── README.md             # 后端说明
 │   ├── config/               # 配置文件
 │   │   ├── risk_thresholds.json      # 论文提取的风险阈值
@@ -43,23 +46,38 @@ hyperlipidemia-risk-system/
 
 ## 快速开始
 
-### 1. 启动后端
+### 1. 安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. 启动 Web 服务
 
 ```bash
 cd backend
-pip install -r requirements.txt
 python app.py
 ```
 
-后端服务启动在 `http://localhost:5000`
+服务启动在 `http://localhost:5000`。
 
-### 2. 打开前端
+### 3. 打开 Web 应用
 
-直接用浏览器打开 `frontend/index.html`
+浏览器访问：
 
-**如果浏览器打开出现跨域问题:**
-- 后端已经启用CORS，只要前后端端口不同（后端5000，前端直接打开是file:///），现代浏览器会允许
-- 如果仍然有问题，可以用 VS Code Live Server 打开前端
+```text
+http://localhost:5000
+```
+
+同一个 Flask 服务会自动提供前端页面和 `/api/*` 后端接口，不再需要单独打开 `frontend/index.html`。
+
+### 可选：训练型特征识别接口
+
+普通风险评估不需要安装机器学习重型依赖。如需使用 `/api/identify` 重新执行 Lasso-Logistic、XGBoost-SHAP 与随机森林特征识别，额外安装：
+
+```bash
+pip install -r backend/requirements-ml.txt
+```
 
 ## 功能流程
 
@@ -81,7 +99,7 @@ python app.py
 | 层级 | 技术 | 说明 |
 |------|------|------|
 | 后端 | Python 3.8+ + Flask | 完整实现论文三大算法 |
-| 机器学习 | Scikit-learn + XGBoost + SHAP | 符合论文方法 |
+| 机器学习 | Scikit-learn + XGBoost + SHAP | 可选安装，用于训练型特征识别接口 |
 | 前端 | HTML5 + Bootstrap 5 + 原生JavaScript | 简单清爽，前后端分离 |
 | API | RESTful JSON | 前后端完全分离，易于维护 |
 

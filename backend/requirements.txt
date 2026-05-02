@@ -1,22 +1,6 @@
-# 后端Python依赖
-# 机器学习
-numpy>=1.24.0
-pandas>=2.0.0
-scipy>=1.10.0
-scikit-learn>=1.3.0
-xgboost>=2.0.0
-shap>=0.41.0
-
 # Web框架
 flask>=2.3.0
 flask-cors>=4.0.0
-
-# 数据处理
-statsmodels>=0.14.0
-
-# 可视化
-matplotlib>=3.7.0
-seaborn>=0.12.0
 
 # 工具
 python-dotenv>=1.0.0

@@ -10,34 +10,35 @@ Frontend → API → Backend → Models → Result → Frontend
 Author: 基于论文CMC2604725研究成果
 Version: 1.0
 """
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
 import os
 
-# 导入三大核心模块
-from models.feature_identification import KeyRiskFactorIdentifier
 from models.risk_classification import ThreeLevelRiskClassifier
 from models.intervention_optimization import InterventionOptimizer
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app)  # 支持跨域，前后端分离
 
 # 初始化所有模型
 # 这些模型在有训练数据时可以重新训练，默认使用论文提取的阈值规则
 risk_classifier = ThreeLevelRiskClassifier()
 intervention_optimizer = InterventionOptimizer()
-feature_identifier = KeyRiskFactorIdentifier()
 
 print("=" * 60)
 print("高血脂风险分层预警与干预推荐系统 - 后端API V1.0")
 print("=" * 60)
-print("✓ 关键风险因素识别模块: 已加载 (Lasso-Logistic + XGBoost-SHAP + RF)")
+print("✓ 关键风险因素识别模块: 按需加载 (Lasso-Logistic + XGBoost-SHAP + RF)")
 print("✓ 三级风险分层预警模块: 已加载 (CART决策树，论文准确率95.00%)")
 print("✓ 个体化干预优化模块: 已加载 (画像分型 + 约束组合优化)")
 print("✓ CORS已启用，支持前后端分离")
 print()
 print("API端点:")
+print("  GET  /                 - Web应用首页")
 print("  POST /api/predict       - 完整风险评估和干预推荐")
 print("  POST /api/identify      - 关键风险因素识别")
 print("  GET  /api/thresholds    - 获取论文提取的阈值信息")
@@ -45,7 +46,19 @@ print("=" * 60)
 
 
 @app.route('/')
-def index():
+def web_index():
+    """Web应用首页"""
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+@app.route('/about')
+def web_about():
+    """关于页面"""
+    return send_from_directory(FRONTEND_DIR, 'about.html')
+
+
+@app.route('/api')
+def api_index():
     """API首页"""
     return jsonify({
         'name': '高血脂风险分层预警与干预推荐系统',
@@ -83,6 +96,7 @@ def identify_factors():
     }
     """
     try:
+        from models.feature_identification import KeyRiskFactorIdentifier
         data = request.get_json()
         if not data or 'data' not in data:
             return jsonify({
@@ -96,6 +110,8 @@ def identify_factors():
         df = pd.DataFrame(data['data'])
         X = df.drop(columns=['label'])
         y = df['label']
+
+        feature_identifier = KeyRiskFactorIdentifier()
         
         # 执行完整识别流程
         result = feature_identifier.fit_all(X, y)
@@ -153,7 +169,19 @@ def predict():
     }
     """
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
+
+        required_fields = [
+            'age', 'gender', 'height', 'weight', 'tan_score',
+            'tg', 'tc', 'hdl_c', 'ldl_c', 'urea_acid', 'adl_score'
+        ]
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'code': 1,
+                'message': f"缺少必填字段: {', '.join(missing_fields)}",
+                'data': None
+            })
         
         # 计算BMI
         height_m = data['height'] / 100
@@ -192,6 +220,7 @@ def predict():
             max_budget=budget,
             n=3
         )
+        intervention_result['alternatives'] = alternative_plans
         
         return jsonify({
             'code': 0,
@@ -257,6 +286,6 @@ if __name__ == '__main__':
     # 启动服务
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=int(os.environ.get('PORT', 5000)),
         debug=False
     )

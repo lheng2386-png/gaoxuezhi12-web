@@ -1,0 +1,104 @@
+{
+  "name": "干预方案成本和效果参数配置",
+  "description": "中医调理等级、运动强度的成本和效果参数，基于论文假设",
+  "version": "1.0",
+  "调理等级": {
+    "level_1": {
+      "name": "基础调理",
+      "cost_per_month": 80,
+      "effect_per_month": 0.8,
+      "description": "饮食指导 + 生活方式建议"
+    },
+    "level_2": {
+      "name": "标准调理",
+      "cost_per_month": 160,
+      "effect_per_month": 1.5,
+      "description": "基础调理 + 中成药调理"
+    },
+    "level_3": {
+      "name": "强化调理",
+      "cost_per_month": 280,
+      "effect_per_month": 2.2,
+      "description": "标准调理 + 穴位按摩 + 定期随访"
+    },
+    "level_4": {
+      "name": "专业调理",
+      "cost_per_month": 400,
+      "effect_per_month": 2.8,
+      "description": "强化调理 + 中医师面诊"
+    }
+  },
+  "运动方案": {
+    "intensity_low": {
+      "name": "低强度运动",
+      "frequency_1x": {
+        "cost_per_month": 30,
+        "effect_per_month": 0.5,
+        "tolerance": "适合高龄、功能受限患者"
+      },
+      "frequency_3x": {
+        "cost_per_month": 60,
+        "effect_per_month": 0.9,
+        "tolerance": "适合高龄、功能受限患者"
+      }
+    },
+    "intensity_medium": {
+      "name": "中等强度运动",
+      "frequency_1x": {
+        "cost_per_month": 50,
+        "effect_per_month": 0.8,
+        "tolerance": "适合身体状况一般患者"
+      },
+      "frequency_3x": {
+        "cost_per_month": 100,
+        "effect_per_month": 1.5,
+        "tolerance": "适合身体状况一般患者"
+      }
+    },
+    "intensity_high": {
+      "name": "高强度运动",
+      "frequency_1x": {
+        "cost_per_month": 80,
+        "effect_per_month": 1.2,
+        "tolerance": "适合年轻、身体状况良好患者"
+      },
+      "frequency_3x": {
+        "cost_per_month": 160,
+        "effect_per_month": 2.2,
+        "tolerance": "适合年轻、身体状况良好患者"
+      }
+    }
+  },
+  "default_constraints": {
+    "max_total_cost_6months": 2000,
+    "min_expected_effect": 5
+  },
+  "patient_type_rules": {
+    "metabolic": {
+      "name": "代谢异常主导型",
+      "description": "血脂异常为主，体质和活动能力尚可",
+      "prefer_strategy": "优先强化调理",
+      "constraints": {
+        "min_treatment_level": 2
+      }
+    },
+    "obesity": {
+      "name": "肥胖并发型",
+      "description": "BMI超标 + 痰湿质 + 代谢异常",
+      "prefer_strategy": "调理 + 运动联合干预",
+      "constraints": {
+        "require_exercise": true,
+        "min_exercise_intensity": "medium"
+      }
+    },
+    "function_limited": {
+      "name": "功能受限型",
+      "description": "活动能力下降 + 高龄 + 多种并发症",
+      "prefer_strategy": "低强度稳步改善方案",
+      "constraints": {
+        "max_treatment_level": 3,
+        "max_exercise_intensity": "low"
+      }
+    }
+  }
+}

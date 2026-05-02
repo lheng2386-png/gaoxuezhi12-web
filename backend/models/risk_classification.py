@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 模块二：三级风险分层预警
 算法：CART决策树、中西医融合三级标签（低/中/高风险）
@@ -12,11 +14,25 @@ Author: 基于论文CMC2604725研究成果
 """
 import json
 import os
-import numpy as np
-import pandas as pd
-from sklearn.tree import DecisionTreeClassifier, export_text
-from sklearn.model_selection import cross_val_score, StratifiedKFold
-from sklearn.base import BaseEstimator, ClassifierMixin
+try:
+    import numpy as np
+    import pandas as pd
+    from sklearn.tree import DecisionTreeClassifier, export_text
+    from sklearn.model_selection import cross_val_score, StratifiedKFold
+    from sklearn.base import BaseEstimator, ClassifierMixin
+except ImportError:
+    np = None
+    pd = None
+    DecisionTreeClassifier = None
+    export_text = None
+    cross_val_score = None
+    StratifiedKFold = None
+
+    class BaseEstimator:
+        pass
+
+    class ClassifierMixin:
+        pass
 from typing import Dict, List, Tuple, Optional, Any
 
 
@@ -36,7 +52,7 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         if config_path is None:
             # 默认配置路径（相对于当前文件）
             current_dir = os.path.dirname(__file__)
-            config_path = os.path.join(current_dir, '../../config/risk_thresholds.json')
+            config_path = os.path.join(current_dir, '../config/risk_thresholds.json')
         
         with open(config_path, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
@@ -47,13 +63,15 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         self.min_samples_split = min_samples_split
         self.random_state = random_state
         
-        # 初始化CART模型
-        self.model = DecisionTreeClassifier(
-            criterion='gini',
-            max_depth=self.max_depth,
-            min_samples_split=self.min_samples_split,
-            random_state=self.random_state
-        )
+        # 初始化CART模型。Web预测主流程可直接使用论文阈值规则，不强制安装scikit-learn。
+        self.model = None
+        if DecisionTreeClassifier is not None:
+            self.model = DecisionTreeClassifier(
+                criterion='gini',
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                random_state=self.random_state
+            )
         
         self.is_fitted = False
         self.feature_names_ = None
@@ -71,8 +89,11 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         返回:
             labels: 0=低风险, 1=中风险, 2=高风险
         """
+        if np is None:
+            raise ImportError("get_prior_label 需要安装 numpy/pandas")
+
         n_samples = len(features)
-        risk_score = np.zeros(n_modules)
+        risk_score = np.zeros(n_samples)
         
         # 痰湿积分检查（分数越高风险越高）
         if 'tan_score_raw' in features.columns:
@@ -115,7 +136,7 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         # HDL-C检查（越低风险越高）
         if 'hdl_c' in features.columns and 'low_risk_cutoff' in self.thresholds['hdl_c']:
             hdl = features['hdl_c'].values
-            low_risk_cutoff = self.thresholds['hdl_c']['low_risk_cut']
+            low_risk_cutoff = self.thresholds['hdl_c']['low_risk_cutoff']
             risk_score += np.where(hdl <= low_risk_cutoff, 2, 0)
         
         # BMI检查
@@ -157,6 +178,9 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         返回:
             self
         """
+        if self.model is None:
+            raise ImportError("训练CART模型需要安装 scikit-learn")
+
         self.feature_names_ = X.columns.tolist()
         
         # 如果没有提供标签，使用先验阈值生成
@@ -220,6 +244,9 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
         返回:
             评估结果字典
         """
+        if StratifiedKFold is None or cross_val_score is None:
+            raise ImportError("交叉验证需要安装 scikit-learn")
+
         skf = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=self.random_state)
         scores = cross_val_score(self.model, X, y, cv=skf, scoring='accuracy')
         
@@ -264,7 +291,7 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
             预测结果字典，包含风险等级、异常因素等
         """
         # 转换为DataFrame
-        X = pd.DataFrame([features])
+        X = pd.DataFrame([features]) if pd is not None else None
         
         # 基于规则识别异常因素
         risk_factors = []
@@ -324,7 +351,7 @@ class ThreeLevelRiskClassifier(BaseEstimator, ClassifierMixin):
             risk_factors.append(f"血尿酸偏高({urea_acid:.0f} μmol/L)")
         
         # 使用模型预测
-        if self.is_fitted:
+        if self.is_fitted and X is not None:
             predicted_level = int(self.predict(X)[0])
         else:
             # 使用规则分级
@@ -372,8 +399,9 @@ if not os.path.exists(config_dir):
 
 # 复制配置文件
 config_path = os.path.join(config_dir, 'risk_thresholds.json')
-with open(config_path, 'w', encoding='utf-8') as f:
-    json.dump({
+if not os.path.exists(config_path):
+    with open(config_path, 'w', encoding='utf-8') as f:
+        json.dump({
         "name": "高血脂风险分层阈值配置（来自论文研究结果）",
         "description": "基于CART决策树提取的阈值边界",
         "version": "1.0",
@@ -449,7 +477,7 @@ with open(config_path, 'w', encoding='utf-8') as f:
             "cv_folds": 5,
             "source": "论文交叉验证结果"
         }
-    }, f, ensure_ascii=False, indent=2)
+        }, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

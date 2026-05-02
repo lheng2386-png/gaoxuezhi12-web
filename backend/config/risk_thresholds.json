@@ -1,0 +1,77 @@
+{
+  "name": "高血脂风险分层阈值配置（来自论文研究结果）",
+  "description": "基于CART决策树提取的阈值边界",
+  "version": "1.0",
+  "thresholds": {
+    "tan_score": {
+      "high_risk_cutoff": 60,
+      "medium_risk_cutoff": 40,
+      "unit": "分",
+      "description": "痰湿体质积分"
+    },
+    "tg": {
+      "high_risk_cutoff": 1.7,
+      "medium_risk_cutoff": 1.2,
+      "unit": "mmol/L",
+      "description": "甘油三酯"
+    },
+    "tc": {
+      "high_risk_cutoff": 6.2,
+      "medium_risk_cutoff": 5.2,
+      "unit": "mmol/L",
+      "description": "总胆固醇"
+    },
+    "activity_score": {
+      "high_risk_cutoff": 40,
+      "unit": "分",
+      "description": "活动能力评分，分数越低风险越高",
+      "reverse": true
+    },
+    "ldl_c": {
+      "high_risk_cutoff": 4.1,
+      "medium_risk_cutoff": 3.4,
+      "unit": "mmol/L",
+      "description": "低密度脂蛋白胆固醇"
+    },
+    "hdl_c": {
+      "low_risk_cutoff": 1,
+      "unit": "mmol/L",
+      "description": "高密度脂蛋白胆固醇，越低风险越高",
+      "reverse": true
+    },
+    "urea_acid": {
+      "high_risk_cutoff": 420,
+      "medium_risk_cutoff": 360,
+      "unit": "μmol/L",
+      "description": "血尿酸"
+    },
+    "bmi": {
+      "high_risk_cutoff": 28,
+      "medium_risk_cutoff": 24,
+      "unit": "kg/m²",
+      "description": "体重指数"
+    }
+  },
+  "risk_level_definition": {
+    "low": {
+      "name": "低风险",
+      "color": "#28a745",
+      "description": "各项指标基本正常，保持健康生活方式即可"
+    },
+    "medium": {
+      "name": "中风险",
+      "color": "#ffc107",
+      "description": "部分指标异常，需要关注并适当调整生活方式"
+    },
+    "high": {
+      "name": "高风险",
+      "color": "#dc3545",
+      "description": "多项指标异常，建议就医并进行针对性干预"
+    }
+  },
+  "model_accuracy": {
+    "cart_accuracy": 0.95,
+    "cv_folds": 5,
+    "source": "论文交叉验证结果"
+  }
+}

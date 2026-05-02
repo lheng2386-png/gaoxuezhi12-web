@@ -25,7 +25,7 @@ class InterventionOptimizer:
     def __init__(self, config_path: str = None):
         if config_path is None:
             current_dir = os.path.dirname(__file__)
-            config_path = os.path.join(current_dir, '../../config/intervention_costs.json')
+            config_path = os.path.join(current_dir, '../config/intervention_costs.json')
         
         with open(config_path, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
@@ -76,8 +76,7 @@ class InterventionOptimizer:
         # 论文中的判断逻辑
         # 优先判断功能受限型
         if activity <= 40 or age >= 75:
-            if activity <= 40:
-                patient_type = 'function_limited'
+            patient_type = 'function_limited'
         # 然后判断肥胖并发型
         elif bmi >= 28 and tan_score >= 40:
             patient_type = 'obesity'
@@ -275,7 +274,7 @@ class InterventionOptimizer:
         result = []
         seen = set()
         for combo in all_combinations:
-            key = (combo['treatment_key'], combo['intensity_key'], combo['frequency'])
+            key = (combo['treatment_key'], combo['intensity_key'], combo.get('frequency_name'))
             if key not in seen:
                 seen.add(key)
                 # 添加友好名称
@@ -321,8 +320,9 @@ if not os.path.exists(config_dir):
     os.makedirs(config_dir)
 
 config_path = os.path.join(config_dir, 'intervention_costs.json')
-with open(config_path, 'w', encoding='utf-8') as f:
-    json.dump({
+if not os.path.exists(config_path):
+    with open(config_path, 'w', encoding='utf-8') as f:
+        json.dump({
         "name": "干预方案成本和效果参数配置",
         "description": "中医调理等级、运动强度的成本和效果参数，基于论文假设",
         "version": "1.0",
@@ -425,7 +425,7 @@ with open(config_path, 'w', encoding='utf-8') as f:
                 }
             }
         }
-    }, f, ensure_ascii=False, indent=2)
+        }, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
